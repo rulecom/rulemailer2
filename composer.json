@@ -1,0 +1,28 @@
+{
+    "name": "rulecom/rulemailer2",
+    "description": "Magento2 module for integration with RuleMailer",
+    "type": "magento2-module",
+    "version": "1.0.0",
+    "authors": [
+        {
+            "name": "Stanislav Kalashnik",
+            "email": "stanislav.kalashnik@rule.se"
+        }
+    ],
+    "require": {
+        "magento/magento-composer-installer": "*",
+        "rulecom/api-wrapper" : "master-dev"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/rulecom/api-wrapper"
+        }
+    ],
+    "autoload": {
+        "files": [ "registration.php" ],
+        "psr-4": {
+            "Rule\\RuleMailer\\": ""
+        }
+    }
+}
