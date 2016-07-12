@@ -24,13 +24,5 @@
         "psr-4": {
             "Rule\\RuleMailer\\": ""
         }
-    },
-    "extra": {
-        "map": [
-            [
-                "*",
-                "Rule/RuleMailer"
-            ]
-        ]
     }
 }
