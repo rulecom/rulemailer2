@@ -6,19 +6,19 @@
     </tab>
 
     <section id="rule_rulemailer" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
-      <label>Rule_RuleMailer</label>
+      <label>RuleMailer</label>
       <tab>rule</tab>
       <resource>Rule_RuleMailer::rule_rulemailer</resource>
       <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
         <label>General</label>
-        <field id="enable" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+        <field id="use_transactional" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
           <label>Use Transactional</label>
           <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
           <comment>
             Should Rule transactionals beeing used for the mail sending.
           </comment>
         </field>
-        <field id="block_label" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+        <field id="api_key" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
           <label>Api key</label>
           <comment>
             Account api key for the Rule application.
