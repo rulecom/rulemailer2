@@ -1,6 +1,6 @@
-<?php
-namespace Rule\RuleMailer\Observer;
+<?php namespace Rule\RuleMailer\Observer;
 
+use Psr\Log\LoggerInterface;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\DataObject as Object;
 use Magento\Framework\Event\Observer;
@@ -10,6 +10,7 @@ use Magento\Store\Model\ScopeInterface;
 use Magento\Customer\Model\Session;
 use Rule\RuleMailer\Model\Api\Subscriber;
 use Magento\Customer\Model\CustomerFactory;
+
 class CheckoutObserver implements ObserverInterface
 {
     private $subscriberApi;
@@ -18,7 +19,11 @@ class CheckoutObserver implements ObserverInterface
 
     private $customerFactory;
 
-    public function __construct(ScopeConfigInterface $scopeConfig, Session $customerSession, CustomerFactory $customerFactory)
+    public function __construct(
+        ScopeConfigInterface $scopeConfig,
+        Session $customerSession,
+        CustomerFactory $customerFactory
+    )
     {
         $this->config = $scopeConfig;
         $this->customerFactory = $customerFactory;
@@ -43,9 +48,10 @@ class CheckoutObserver implements ObserverInterface
                 $customer->setFirstname($event->getOrder()->getBillingAddress()->getFirstname());
                 $customer->setLastname($event->getOrder()->getBillingAddress()->getLastname());
             }
+
             $this->subscriberApi->completeOrder($customer, $event->getOrder(), $event->getQuote());
         } catch (\Exception $e) {
-            error_log($e->getMessage());
+            $this->logger->exception($e->getMessage());
         }
     }
 }

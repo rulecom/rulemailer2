@@ -1,6 +1,6 @@
-<?php
-namespace Rule\RuleMailer\Observer;
+<?php namespace Rule\RuleMailer\Observer;
 
+use Psr\Log\LoggerInterface;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\DataObject as Object;
 use Magento\Framework\Event\Observer;
@@ -15,11 +15,17 @@ class CartObserver implements ObserverInterface
 
     private $config;
 
-    public function __construct(ScopeConfigInterface $scopeConfig, Session $customerSession)
+    private $logger;
+
+    public function __construct(
+        ScopeConfigInterface $scopeConfig,
+        Session $customerSession,
+        LoggerInterface $logger
+    )
     {
         $this->config = $scopeConfig;
-
         $this->customerSession = $customerSession;
+        $this->logger = $logger;
 
         $apiKey = $this->config->getValue('rule_rulemailer/general/api_key', ScopeInterface::SCOPE_STORE);
         $this->subscriberApi = new Subscriber($apiKey);
@@ -31,7 +37,11 @@ class CartObserver implements ObserverInterface
         $cart = $event->getCart();
 
         if ($this->customerSession->isLoggedIn()) {
-            $this->subscriberApi->updateCustomerCart($this->customerSession->getCustomer(), $cart);
+            try {
+                $this->subscriberApi->updateCustomerCart($this->customerSession->getCustomer(), $cart);
+            } catch (\Exception $e) {
+                $this->logger->exception($e->getMessage());
+            }
         }
     }
 }

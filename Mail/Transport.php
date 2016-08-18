@@ -1,52 +1,36 @@
 <?php namespace Rule\RuleMailer\Mail;
 
+use Psr\Log\LoggerInterface;
 use Magento\Framework\Mail\Transport as MagentoTransport;
 use Magento\Framework\Mail\MessageInterface;
 use Rule\ApiWrapper\ApiFactory;
 
 use Rule\RuleMailer\Helper\Data;
+use Rule\RuleMailer\Model\Api\Transaction;
 
 class Transport extends MagentoTransport
 {
-    public function __construct(MessageInterface $message, Data $dataHelper)
+    private $logger;
+
+    public function __construct(MessageInterface $message, Data $dataHelper, LoggerInterface $logger)
     {
-        error_log("construct transport");
         parent::__construct($message);
 
         $this->dataHelper = $dataHelper;
         $this->_message = $message;
-        $this->transactionalApi = ApiFactory::make($this->dataHelper->getApiKey(), 'transaction');
+        $this->logger = $logger;
+        $this->transactionalApi = new Transaction($this->dataHelper->getApiKey());
     }
 
     public function sendMessage()
     {
-        error_log("sending message");
         if (!$this->dataHelper->getUseTransactional()) {
             parent::send($this->_message);
         } else {
-            $html = $this->_message->getBodyHtml(true);
-            $plain = $this->_message->getBodyHtml(true)
-                ? $this->_message->getBodyHtml(true)
-                : strip_tags($html);
-
-            $transaction = [
-                'transaction_type' => 'email',
-                'transaction_name' => 'some',
-                'subject' => $this->_message->getSubject(),
-                'from' => $this->_message->getFromAssoc(),
-                'content' => [
-                    'plain' => $plain,
-                    'html' => $html
-                ]
-            ];
-
-            foreach ($this->_message->getRecipientsAssoc() as $recipient) {
-                $transaction['to'] = $recipient;
-                try {
-                    $this->transactionalApi->send($transaction);
-                } catch (\Exception $e) {
-                    error_log($e->getMessage());
-                }
+            try {
+                $this->transactionalApi->sendMessage($this->_message);
+            } catch (\Exception $e) {
+                $this->logger->exception($e->getMessage());
             }
         }
     }

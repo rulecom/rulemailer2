@@ -12,6 +12,7 @@ class Subscriber
     const CHECKOUT_COMPLETE_TAG = 'Order';
 
     private $subscriberApi;
+    private $fieldsBuilder;
 
     public function __construct($apiKey)
     {
@@ -29,32 +30,17 @@ class Subscriber
             'fields' => $fields
         ];
 
-        try {
-            $result = $this->subscriberApi->create($subscriber);
-        } catch (Exception $e) {
-            
-        }
+        $result = $this->subscriberApi->create($subscriber);
     }
 
     public function removeSubscriber($email)
     {
-        try {
-            $result = $this->subscriberApi->deleteTag($email, self::NEWSLETTER_TAG);
-        } catch (Exception $e) {
-            
-        }
+        $result = $this->subscriberApi->deleteTag($email, self::NEWSLETTER_TAG);
     }
 
     // product name, quantity, price?, total price?
     public function updateCustomerCart($customer, $cart)
     {
-        error_log("here");
-        try {
-            $this->subscriberApi->deleteTag($customer->getEmail(), self::CHECKOUT_COMPLETE_TAG);
-        } catch (Exception $e) {
-            // log error, suppose there could be 404 if customer had logged in only during the checkout
-        }
-
         $quote = $cart->getQuote();
         $subscriber = ['email' => $customer->getEmail(),
                        'tags' => [self::CART_IN_PROGRESS_TAG],
@@ -65,11 +51,7 @@ class Subscriber
         $cartFields = $this->fieldsBuilder->buildCartFields($quote);
         $subscriber['fields'] = array_merge($customerFields, $cartFields);
 
-        try {
-            $result = $this->subscriberApi->create($subscriber);
-        } catch (\Exception $e) {
-            error_log($e->getMessage());
-        }
+        $result = $this->subscriberApi->create($subscriber);
     }
 
     public function completeOrder($customer, $order, $quote)
@@ -77,7 +59,7 @@ class Subscriber
         try {
             $this->subscriberApi->deleteTag($customer->getEmail(), self::CART_IN_PROGRESS_TAG);
         } catch (\Exception $e) {
-            error_log($e->getMessage());
+
         }
 
         $subscriber = [
@@ -91,10 +73,6 @@ class Subscriber
         $orderFields = $this->fieldsBuilder->buildOrderFields($order, $quote);
         $subscriber['fields'] = array_merge($customerFields, $orderFields);
 
-        try {
-            $result = $this->subscriberApi->create($subscriber);
-        } catch (\Exception $e) {
-            error_log($e->getMessage());
-        }
+        $result = $this->subscriberApi->create($subscriber);
     }
 }

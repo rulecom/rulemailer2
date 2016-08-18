@@ -1,6 +1,6 @@
-<?php
-namespace Rule\RuleMailer\Observer;
+<?php namespace Rule\RuleMailer\Observer;
 
+use Psr\Log\LoggerInterface;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\DataObject as Object;
 use Magento\Framework\Event\Observer;
@@ -16,8 +16,11 @@ class SubscriptionObserver implements ObserverInterface
 
     private $config;
 
-    public function __construct(ScopeConfigInterface $scopeConfig)
+    private $logger;
+
+    public function __construct(ScopeConfigInterface $scopeConfig, LoggerInterface $logger)
     {
+        $this->logger = $logger;
         $this->config = $scopeConfig;
 
         $apiKey = $this->config->getValue('rule_rulemailer/general/api_key', ScopeInterface::SCOPE_STORE);
@@ -27,6 +30,10 @@ class SubscriptionObserver implements ObserverInterface
     public function execute(Observer $observer)
     {
         $event = $observer->getEvent();
-        $this->subscriberApi->addSubscriber($event->getSubscriber()->getEmail(), [Subscriber::NEWSLETTER_TAG]);
+        try {
+            $this->subscriberApi->addSubscriber($event->getSubscriber()->getEmail(), [Subscriber::NEWSLETTER_TAG]);
+        } catch (\Exception $e) {
+            $this->logger->exception($e->getMessage());
+        }
     }
 }
