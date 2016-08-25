@@ -11,14 +11,8 @@
     ],
     "require": {
         "magento/magento-composer-installer": "*",
-        "rulecom/api-wrapper" : "master-dev"
+        "rulecom/api-wrapper" : "~1.0"
     },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/rulecom/api-wrapper"
-        }
-    ],
     "autoload": {
         "files": [ "registration.php" ],
         "psr-4": {
