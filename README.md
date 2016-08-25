@@ -9,6 +9,9 @@ In the terminal `cd` to the root of your magento project. Then run:
 composer require rulecom/rulemailer2
 php bin/magento setup:upgrade
 php bin/magento setup:di:compile
+```
+
+
 
 #Configuration#
 In the admin part of your Magento app select `Stores/Configuration` section. Then select `RULE/Rulemailer` from the left menu.
