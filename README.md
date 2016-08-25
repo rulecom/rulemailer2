@@ -1,5 +1,5 @@
 #Rulemailer2#
-Magento 2 integration module for the [Rule](https://www.rule.se/).
+Magento 2 integration module for the [Rule](https://www.rule.se/). This module allows Magento to send to the RULE application(for further use by your account) data about customer (email, first name, last name, date of birth and gender), cart info(product list, quantity, total price) and orders(product list, shipping address, product categories, total price). Also providing optional functionality for sending emails from magento using [RULE transactional api](https://rule.se/apidoc/#transactions).
 
 #Installation#
 
