@@ -51,7 +51,7 @@ class CheckoutObserver implements ObserverInterface
 
             $this->subscriberApi->completeOrder($customer, $event->getOrder(), $event->getQuote());
         } catch (\Exception $e) {
-            $this->logger->exception($e->getMessage());
+            $this->logger->info("Failed to send order data: " . $e->getMessage());
         }
     }
 }
