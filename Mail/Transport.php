@@ -4,7 +4,6 @@ use Psr\Log\LoggerInterface;
 use Magento\Framework\Mail\Transport as MagentoTransport;
 use Magento\Framework\Mail\MessageInterface;
 use Rule\ApiWrapper\ApiFactory;
-
 use Rule\RuleMailer\Helper\Data;
 use Rule\RuleMailer\Model\Api\Transaction;
 
@@ -30,7 +29,7 @@ class Transport extends MagentoTransport
             try {
                 $this->transactionalApi->sendMessage($this->_message);
             } catch (\Exception $e) {
-                $this->logger->exception($e->getMessage());
+                $this->logger->info("Failed to send message: " . $e->getMessage());
             }
         }
     }

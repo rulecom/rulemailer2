@@ -41,11 +41,17 @@ class Subscriber
     // product name, quantity, price?, total price?
     public function updateCustomerCart($customer, $cart)
     {
+        try {
+            $this->subscriberApi->deleteTag($customer->getEmail(), self::CART_IN_PROGRESS_TAG);
+        } catch (\Exception $e) {
+            
+        }
+
         $quote = $cart->getQuote();
         $subscriber = ['email' => $customer->getEmail(),
                        'tags' => [self::CART_IN_PROGRESS_TAG],
-                       'update_on_duplicate' => true,
-                       'force_automation' => true];
+                       'update_on_duplicate' => true
+        ];
 
         $customerFields = $this->fieldsBuilder->buildCustomerFields($customer);
         $cartFields = $this->fieldsBuilder->buildCartFields($quote);

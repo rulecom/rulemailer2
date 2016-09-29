@@ -33,7 +33,7 @@ class SubscriptionObserver implements ObserverInterface
         try {
             $this->subscriberApi->addSubscriber($event->getSubscriber()->getEmail(), [Subscriber::NEWSLETTER_TAG]);
         } catch (\Exception $e) {
-            $this->logger->exception($e->getMessage());
+            $this->logger->info("Failer to send subscriber: " . $e->getMessage());
         }
     }
 }
