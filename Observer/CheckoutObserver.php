@@ -19,12 +19,16 @@ class CheckoutObserver implements ObserverInterface
 
     private $customerFactory;
 
+    private $logger;
+
     public function __construct(
         ScopeConfigInterface $scopeConfig,
         Session $customerSession,
-        CustomerFactory $customerFactory
+        CustomerFactory $customerFactory,
+        LoggerInterface $logger
     )
     {
+        $this->logger = $logger;
         $this->config = $scopeConfig;
         $this->customerFactory = $customerFactory;
         $this->customerSession = $customerSession;
@@ -51,7 +55,7 @@ class CheckoutObserver implements ObserverInterface
 
             $this->subscriberApi->completeOrder($customer, $event->getOrder(), $event->getQuote());
         } catch (\Exception $e) {
-            $this->logger->info("Failed to send order data: " . $e->getMessage());
+            $this->logger->info("Filed to complete order: " . $e->getMessage());
         }
     }
 }
