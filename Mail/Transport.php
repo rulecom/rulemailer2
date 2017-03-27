@@ -24,7 +24,11 @@ class Transport extends MagentoTransport
     public function sendMessage()
     {
         if (!$this->dataHelper->getUseTransactional()) {
-            parent::send($this->_message);
+            try {
+                parent::send($this->_message);
+            } catch (\Exception $e) {
+                $this->logger->info("Failed to send message: " . $e->getMessage());
+            }
         } else {
             try {
                 $this->transactionalApi->sendMessage($this->_message);
