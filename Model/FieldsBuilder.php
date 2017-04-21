@@ -75,14 +75,14 @@ class FieldsBuilder
                 'url' => $product->getProductUrl(),
                 'quantity' => $item->getQty(),
                 'price' => $item->getPrice(),
-                'description' => $product->getDescription(),
+                'description' => html_entity_decode($product->getDescription()),
                 'image' => $quote->getStore()
                         ->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA)
                     . 'catalog/product' . $product->getImage()
            ];
         }
 
-        return json_encode($products, JSON_UNESCAPED_SLASHES);
+        return json_encode($products, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
     }
 
     protected function getProductCategories($quote)

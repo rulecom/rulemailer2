@@ -22,8 +22,6 @@ class Subscriber
 
     public function addSubscriber($email, $tags = [], $fields = [], $options = [])
     {
-        $defaultOptions = ['update_on_duplicate' => true];
-
         $subscriber = [
             'email' => $email,
             'tags' => $tags,
@@ -48,9 +46,11 @@ class Subscriber
         }
 
         $quote = $cart->getQuote();
-        $subscriber = ['email' => $customer->getEmail(),
-                       'tags' => [self::CART_IN_PROGRESS_TAG],
-                       'update_on_duplicate' => true
+        $subscriber = [
+            'email' => $customer->getEmail(),
+            'tags' => [self::CART_IN_PROGRESS_TAG],
+            'update_on_duplicate' => true,
+            'automation' => 'reset'
         ];
 
         $customerFields = $this->fieldsBuilder->buildCustomerFields($customer);
@@ -72,7 +72,7 @@ class Subscriber
             'email' => $customer->getEmail(),
             'tags' => [self::CHECKOUT_COMPLETE_TAG],
             'update_on_duplicate' => true,
-            'force_automation' => true
+            'automation' => 'reset'
         ];
 
         $customerFields = $this->fieldsBuilder->buildCustomerFields($customer);
