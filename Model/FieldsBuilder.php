@@ -75,7 +75,6 @@ class FieldsBuilder
                 'url' => $product->getProductUrl(),
                 'quantity' => $item->getQty(),
                 'price' => $item->getPrice(),
-                'description' => html_entity_decode($product->getDescription()),
                 'image' => $quote->getStore()
                         ->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA)
                     . 'catalog/product' . $product->getImage()
