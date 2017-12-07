@@ -33,4 +33,36 @@ class Message extends MagentoMessage
     {
         return $this->_recipientsAssoc;
     }
+
+    /**
+     * Return Zend_Mime_Part representing body HTML
+     *
+     * @param  bool $htmlOnly Whether to return the body HTML only, or the MIME part; defaults to false, the MIME part
+     * @return false|Zend_Mime_Part|string
+     */
+    public function getBodyHtml($htmlOnly = false)
+    {
+        if ($htmlOnly && $this->_bodyHtml) {
+            $body = $this->_bodyHtml;
+            return $body->getRawContent();
+        }
+
+        return $this->_bodyHtml;
+    }
+
+    /**
+     * Return text body Zend_Mime_Part or string
+     *
+     * @param  bool textOnly Whether to return just the body text content or the MIME part; defaults to false, the MIME part
+     * @return false|Zend_Mime_Part|string
+     */
+    public function getBodyText($textOnly = false)
+    {
+        if ($textOnly && $this->_bodyText) {
+            $body = $this->_bodyText;
+            return $body->getRawContent();
+        }
+
+        return $this->_bodyText;
+    }
 }
