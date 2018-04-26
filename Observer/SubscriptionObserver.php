@@ -1,23 +1,36 @@
 <?php namespace Rule\RuleMailer\Observer;
 
-use Psr\Log\LoggerInterface;
-use Magento\Framework\Event\ObserverInterface;
-use Magento\Framework\DataObject as Object;
-use Magento\Framework\Event\Observer;
-use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Event\ManagerInterface;
+use Magento\Framework\Event\Observer;
+use Magento\Framework\Event\ObserverInterface;
 use Magento\Store\Model\ScopeInterface;
-
+use Psr\Log\LoggerInterface;
 use Rule\RuleMailer\Model\Api\Subscriber;
 
 class SubscriptionObserver implements ObserverInterface
 {
+    /**
+     * @var Subscriber
+     */
     private $subscriberApi;
 
+    /**
+     * @var ScopeConfigInterface
+     */
     private $config;
 
+    /**
+     * @var LoggerInterface
+     */
     private $logger;
 
+    /**
+     * SubscriptionObserver constructor.
+     *
+     * @param ScopeConfigInterface $scopeConfig
+     * @param LoggerInterface      $logger
+     */
     public function __construct(ScopeConfigInterface $scopeConfig, LoggerInterface $logger)
     {
         $this->logger = $logger;
@@ -27,11 +40,20 @@ class SubscriptionObserver implements ObserverInterface
         $this->subscriberApi = new Subscriber($apiKey);
     }
 
+    /**
+     * Execute the observer.
+     *
+     * @param Observer $observer
+     */
     public function execute(Observer $observer)
     {
         $event = $observer->getEvent();
         try {
-            $this->subscriberApi->addSubscriber($event->getSubscriber()->getEmail(), [Subscriber::NEWSLETTER_TAG]);
+            $fields = [
+                Subscriber::NEWSLETTER_TAG,
+
+            ];
+            $this->subscriberApi->addSubscriber($event->getSubscriber()->getEmail(), $fields);
         } catch (\Exception $e) {
             $this->logger->info("Failer to send subscriber: " . $e->getMessage());
         }

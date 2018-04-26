@@ -1,4 +1,5 @@
 <?php
+
 namespace Rule\RuleMailer\Model\Api;
 
 use Magento\Customer\Model\Customer;
@@ -20,15 +21,28 @@ class Subscriber
         $this->fieldsBuilder = new FieldsBuilder();
     }
 
+    /**
+     * Add subscriber to Rulemailer.
+     *
+     * @param  string $email   User e-mail address.
+     * @param array   $tags    Tags.
+     * @param array   $fields  Fields.
+     * @param array   $options Options.
+     */
     public function addSubscriber($email, $tags = [], $fields = [], $options = [])
     {
+        // Merge the fields
+        $fields = array_merge($fields, $this->fieldsBuilder->buildNewsletterFields());
+
+        // Setup the data
         $subscriber = [
-            'email' => $email,
-            'tags' => $tags,
+            'email'  => $email,
+            'tags'   => $tags,
             'fields' => $fields
         ];
 
-        $result = $this->subscriberApi->create($subscriber);
+        // Execute the API request
+        $this->subscriberApi->create($subscriber);
     }
 
     public function removeSubscriber($email)
@@ -42,15 +56,15 @@ class Subscriber
         try {
             $this->subscriberApi->deleteTag($customer->getEmail(), self::CART_IN_PROGRESS_TAG);
         } catch (\Exception $e) {
-            
+
         }
 
         $quote = $cart->getQuote();
         $subscriber = [
-            'email' => $customer->getEmail(),
-            'tags' => [self::CART_IN_PROGRESS_TAG],
+            'email'               => $customer->getEmail(),
+            'tags'                => [self::CART_IN_PROGRESS_TAG],
             'update_on_duplicate' => true,
-            'automation' => 'reset'
+            'automation'          => 'reset'
         ];
 
         $customerFields = $this->fieldsBuilder->buildCustomerFields($customer);
@@ -69,10 +83,10 @@ class Subscriber
         }
 
         $subscriber = [
-            'email' => $customer->getEmail(),
-            'tags' => [self::CHECKOUT_COMPLETE_TAG],
+            'email'               => $customer->getEmail(),
+            'tags'                => [self::CHECKOUT_COMPLETE_TAG],
             'update_on_duplicate' => true,
-            'automation' => 'reset'
+            'automation'          => 'reset'
         ];
 
         $customerFields = $this->fieldsBuilder->buildCustomerFields($customer);
