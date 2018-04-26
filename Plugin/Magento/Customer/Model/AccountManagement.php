@@ -2,10 +2,11 @@
 
 namespace Rule\RuleMailer\Plugin\Magento\Customer\Model;
 
+use Magento\Checkout\Model\Cart;
+use Magento\Customer\Model\CustomerFactory;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\ScopeInterface;
 use Rule\RuleMailer\Model\Api\Subscriber;
-use \Magento\Checkout\Model\Cart;
 
 /**
  * Class AccountManagement
@@ -32,12 +33,18 @@ class AccountManagement
     protected $cart;
 
     /**
+     * @var CustomerFactory
+     */
+    protected $customerFactory;
+
+    /**
      * AccountManagement constructor.
      */
-    public function __construct(ScopeConfigInterface $scopeConfig, Cart $cart)
+    public function __construct(ScopeConfigInterface $scopeConfig, Cart $cart, CustomerFactory $customerFactory)
     {
         $this->scopeConfig = $scopeConfig;
         $this->cart = $cart;
+        $this->customerFactory = $customerFactory;
     }
 
     /**
@@ -89,8 +96,14 @@ class AccountManagement
 
             // Check if we should send the customer to rule
             if ($sendToRule) {
+                // Create a temporary customer account
+                $customer = $this->customerFactory->create();
+
+                // Populate the model with the e-mail address
+                $customer->setEmail($customerEmail);
+
                 // Send the request
-                $this->subscriberApi->updateCustomerCart($this->customerSession->getCustomer(), $this->cart);
+                $this->subscriberApi->updateCustomerCart($customer, $this->cart);
             }
         } catch (\Exception $e) {
             // Do nothing, silently continue with normal operations
