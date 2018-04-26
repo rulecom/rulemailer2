@@ -73,7 +73,7 @@ class SubscriptionObserver implements ObserverInterface
             ];
 
             // Fetch current store
-            $store = $this->storeManagerInterface->getStore();
+            $store = $this->storeManager->getStore();
 
             // Setup our custom fields
             $fields = [
