@@ -13,6 +13,11 @@ use Rule\RuleMailer\Model\Api\Subscriber;
 class SubscriptionObserver implements ObserverInterface
 {
     /**
+     * @var
+     */
+    const NEWSLETTER_GROUP = 'Newsletter';
+
+    /**
      * @var Subscriber
      */
     private $subscriberApi;

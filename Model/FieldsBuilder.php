@@ -27,11 +27,6 @@ class FieldsBuilder
     const ADDRESS_GROUP = "Address";
 
     /**
-     * @var
-     */
-    const NEWSLETTER_GROUP = 'Newsletter';
-
-    /**
      * @var StoreManagerInterface
      */
     protected $storeManagerInterface;
