@@ -8,13 +8,36 @@ use Rule\RuleMailer\Model\FieldsBuilder;
 
 class Subscriber
 {
+    /**
+     * @var
+     */
     const NEWSLETTER_TAG = 'Newsletter';
+
+    /**
+     * @var
+     */
     const CART_IN_PROGRESS_TAG = 'CartInProgress';
+
+    /**
+     * @var
+     */
     const CHECKOUT_COMPLETE_TAG = 'Order';
 
+    /**
+     * @var
+     */
     private $subscriberApi;
+
+    /**
+     * @var FieldsBuilder
+     */
     private $fieldsBuilder;
 
+    /**
+     * Subscriber constructor.
+     *
+     * @param $apiKey
+     */
     public function __construct($apiKey)
     {
         $this->subscriberApi = ApiFactory::make($apiKey, 'subscriber');
@@ -24,15 +47,17 @@ class Subscriber
     /**
      * Add subscriber to Rulemailer.
      *
-     * @param  string $email   User e-mail address.
-     * @param array   $tags    Tags.
-     * @param array   $fields  Fields.
-     * @param array   $options Options.
+     * @param string $email   User e-mail address.
+     * @param array  $tags    Tags.
+     * @param array  $fields  Fields.
+     * @param array  $options Options.
      */
     public function addSubscriber($email, $tags = [], $fields = [], $options = [])
     {
-        // Merge the fields
-        $fields = array_merge($fields, $this->fieldsBuilder->buildNewsletterFields());
+        if (in_array(self::NEWSLETTER_TAG, $fields)) {
+            // Merge the fields with custom newsletter fields
+            $fields = array_merge($fields, $this->fieldsBuilder->buildNewsletterFields());
+        }
 
         // Setup the data
         $subscriber = [
