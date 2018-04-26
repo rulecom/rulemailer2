@@ -46,32 +46,6 @@ class FieldsBuilder
         $this->storeManagerInterface = $storeManagerInterface;
     }
 
-    /**
-     * Build fields used when signing up for newsletter
-     *
-     * @return array
-     */
-    public function buildNewsletterFields()
-    {
-        if ( $this->storeManagerInterface) {
-            // Fetch current store
-            $currentStore = $this->storeManagerInterface->getStore();
-
-            // Return array with data
-            return [
-                ['key' => self::NEWSLETTER_GROUP . '.StoreId', 'value' => $currentStore->getStoreId()],
-                ['key' => self::NEWSLETTER_GROUP . '.WebsiteId', 'value' => $currentStore->getWebsiteId()],
-                ['key' => self::NEWSLETTER_GROUP . '.StoreName', 'value' => $currentStore->getName()],
-                ['key'   => self::NEWSLETTER_GROUP . '.Currency',
-                 'value' => $currentStore->getCurrentCurrency()->getCode()
-                ],
-                ['key' => self::NEWSLETTER_GROUP . '.Language', 'value' => $currentStore->getLocaleCode()],
-            ];
-        } else {
-            return [];
-        }
-    }
-
     public function buildCartFields($quote)
     {
         $fields = [

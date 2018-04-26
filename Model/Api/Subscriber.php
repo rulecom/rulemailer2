@@ -54,11 +54,6 @@ class Subscriber
      */
     public function addSubscriber($email, $tags = [], $fields = [], $options = [])
     {
-        if (in_array(self::NEWSLETTER_TAG, $fields)) {
-            // Merge the fields with custom newsletter fields
-            $fields = array_merge($fields, $this->fieldsBuilder->buildNewsletterFields());
-        }
-
         // Setup the data
         $subscriber = [
             'email'  => $email,
