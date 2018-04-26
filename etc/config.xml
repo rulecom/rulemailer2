@@ -1,10 +1,10 @@
 <?xml version="1.0" ?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
-        <rule>
-            <rule_rulemailer>
+        <rule_rulemailer>
+            <general>
                 <aggressive_abandoned_cart>0</aggressive_abandoned_cart>
-            </rule_rulemailer>
-        </rule>
+            </general>
+        </rule_rulemailer>
     </default>
 </config>
