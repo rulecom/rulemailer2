@@ -39,9 +39,9 @@ class FieldsBuilder
     /**
      * FieldsBuilder constructor.
      *
-     * @param StoreManagerInterface $storeManagerInterface
+     * @param null $storeManagerInterface
      */
-    public function __construct(StoreManagerInterface $storeManagerInterface)
+    public function __construct($storeManagerInterface = null)
     {
         $this->storeManagerInterface = $storeManagerInterface;
     }
@@ -53,17 +53,23 @@ class FieldsBuilder
      */
     public function buildNewsletterFields()
     {
-        // Fetch current store
-        $currentStore = $this->storeManagerInterface->getStore();
+        if ( $this->storeManagerInterface) {
+            // Fetch current store
+            $currentStore = $this->storeManagerInterface->getStore();
 
-        // Return array with data
-        return [
-            ['key' => self::NEWSLETTER_GROUP . '.StoreId', 'value' => $currentStore->getStoreId()],
-            ['key' => self::NEWSLETTER_GROUP . '.WebsiteId', 'value' => $currentStore->getWebsiteId()],
-            ['key' => self::NEWSLETTER_GROUP . '.StoreName', 'value' => $currentStore->getName()],
-            ['key' => self::NEWSLETTER_GROUP . '.Currency', 'value' => $currentStore->getCurrentCurrency()->getCode()],
-            ['key' => self::NEWSLETTER_GROUP . '.Language', 'value' => $currentStore->getLocaleCode()],
-        ];
+            // Return array with data
+            return [
+                ['key' => self::NEWSLETTER_GROUP . '.StoreId', 'value' => $currentStore->getStoreId()],
+                ['key' => self::NEWSLETTER_GROUP . '.WebsiteId', 'value' => $currentStore->getWebsiteId()],
+                ['key' => self::NEWSLETTER_GROUP . '.StoreName', 'value' => $currentStore->getName()],
+                ['key'   => self::NEWSLETTER_GROUP . '.Currency',
+                 'value' => $currentStore->getCurrentCurrency()->getCode()
+                ],
+                ['key' => self::NEWSLETTER_GROUP . '.Language', 'value' => $currentStore->getLocaleCode()],
+            ];
+        } else {
+            return [];
+        }
     }
 
     public function buildCartFields($quote)

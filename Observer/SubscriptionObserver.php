@@ -7,6 +7,7 @@ use Magento\Framework\Event\ObserverInterface;
 use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
 use Rule\RuleMailer\Model\Api\Subscriber;
+use \Magento\Store\Model\StoreManagerInterface;
 
 class SubscriptionObserver implements ObserverInterface
 {
@@ -31,13 +32,16 @@ class SubscriptionObserver implements ObserverInterface
      * @param ScopeConfigInterface $scopeConfig
      * @param LoggerInterface      $logger
      */
-    public function __construct(ScopeConfigInterface $scopeConfig, LoggerInterface $logger)
-    {
+    public function __construct(
+        ScopeConfigInterface $scopeConfig,
+        LoggerInterface $logger,
+        StoreManagerInterface $storeManager
+    ) {
         $this->logger = $logger;
         $this->config = $scopeConfig;
 
         $apiKey = $this->config->getValue('rule_rulemailer/general/api_key', ScopeInterface::SCOPE_STORE);
-        $this->subscriberApi = new Subscriber($apiKey);
+        $this->subscriberApi = new Subscriber($apiKey, $storeManager);
     }
 
     /**

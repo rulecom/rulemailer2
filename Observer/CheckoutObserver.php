@@ -26,8 +26,7 @@ class CheckoutObserver implements ObserverInterface
         Session $customerSession,
         CustomerFactory $customerFactory,
         LoggerInterface $logger
-    )
-    {
+    ) {
         $this->logger = $logger;
         $this->config = $scopeConfig;
         $this->customerFactory = $customerFactory;
@@ -36,7 +35,6 @@ class CheckoutObserver implements ObserverInterface
         $apiKey = $this->config->getValue('rule_rulemailer/general/api_key', ScopeInterface::SCOPE_STORE);
         $this->subscriberApi = new Subscriber($apiKey);
     }
-
 
     public function execute(Observer $observer)
     {

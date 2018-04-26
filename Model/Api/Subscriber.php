@@ -38,10 +38,10 @@ class Subscriber
      *
      * @param $apiKey
      */
-    public function __construct($apiKey)
+    public function __construct($apiKey, $storeManager=null)
     {
         $this->subscriberApi = ApiFactory::make($apiKey, 'subscriber');
-        $this->fieldsBuilder = new FieldsBuilder();
+        $this->fieldsBuilder = new FieldsBuilder($storeManager);
     }
 
     /**
