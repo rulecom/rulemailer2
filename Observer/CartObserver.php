@@ -21,8 +21,7 @@ class CartObserver implements ObserverInterface
         ScopeConfigInterface $scopeConfig,
         Session $customerSession,
         LoggerInterface $logger
-    )
-    {
+    ) {
         $this->config = $scopeConfig;
         $this->customerSession = $customerSession;
         $this->logger = $logger;
