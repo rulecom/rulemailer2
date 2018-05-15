@@ -1,11 +1,45 @@
-<?php namespace Rule\RuleMailer\Model;
+<?php
+
+namespace Rule\RuleMailer\Model;
+
+use \Magento\Store\Model\StoreManagerInterface;
 
 class FieldsBuilder
 {
+    /**
+     * @var
+     */
     const SUBSCRIBER_GROUP = "User";
+
+    /**
+     * @var
+     */
     const CART_GROUP = "Cart";
+
+    /**
+     * @var
+     */
     const ORDER_GROUP = "Order";
+
+    /**
+     * @var
+     */
     const ADDRESS_GROUP = "Address";
+
+    /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManagerInterface;
+
+    /**
+     * FieldsBuilder constructor.
+     *
+     * @param null $storeManagerInterface
+     */
+    public function __construct($storeManagerInterface = null)
+    {
+        $this->storeManagerInterface = $storeManagerInterface;
+    }
 
     public function buildCartFields($quote)
     {
@@ -40,7 +74,11 @@ class FieldsBuilder
             ['key' => self::ORDER_GROUP . ".StoreId", 'value' => $order->getStoreId()],
             ['key' => self::ORDER_GROUP . ".StoreName", 'value' => $order->getStore()->getName()],
             ['key' => self::ORDER_GROUP . ".Products", 'value' => $this->getProductsJson($quote), 'type' => 'json'],
-            ['key' => self::ORDER_GROUP . ".Categories", 'value' => $this->getProductCategories($quote), 'type' => 'multiple']
+            [
+                'key'   => self::ORDER_GROUP . ".Categories",
+                'value' => $this->getProductCategories($quote),
+                'type'  => 'multiple'
+            ]
         ];
 
         return $fields;
@@ -76,17 +114,17 @@ class FieldsBuilder
             $product = $item->getProduct();
 
             $products[] = [
-                'name' => $product->getName(),
-                'url' => $product->getProductUrl(),
+                'name'     => $product->getName(),
+                'url'      => $product->getProductUrl(),
                 'quantity' => $item->getQty(),
-                'price' => $item->getPrice(),
-                'image' => $quote->getStore()
+                'price'    => $item->getPrice(),
+                'image'    => $quote->getStore()
                         ->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA)
                     . 'catalog/product' . $product->getImage()
-           ];
+            ];
         }
 
-        return json_encode($products, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
+        return json_encode($products, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
     protected function getProductCategories($quote)

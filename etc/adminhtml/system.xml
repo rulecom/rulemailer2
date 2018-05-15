@@ -19,13 +19,11 @@
                     <label>Api key</label>
                     <comment>Account api key for the Rule application.</comment>
                 </field>
-
                 <field id="aggressive_abandoned_cart" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Aggressive abandoned cart</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>With this option enabled, we will report the e-mail address provided in the checkout (given that the customer exists) before user is logged in.</comment>
                 </field>
-
             </group>
         </section>
     </system>

@@ -20,8 +20,8 @@ class AddProductObserver implements ObserverInterface
     public function __construct(
         ScopeConfigInterface $scopeConfig,
         Session $customerSession,
-        LoggerInterface $logger)
-    {
+        LoggerInterface $logger
+    ) {
         $this->config = $scopeConfig;
         $this->customerSession = $customerSession;
         $this->logger = $logger;
