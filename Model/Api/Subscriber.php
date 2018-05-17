@@ -76,7 +76,7 @@ class Subscriber
         try {
             $this->subscriberApi->deleteTag($customer->getEmail(), self::CART_IN_PROGRESS_TAG);
         } catch (\Exception $e) {
-
+            // Do nothing for now
         }
 
         $quote = $cart->getQuote();

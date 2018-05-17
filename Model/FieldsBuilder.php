@@ -86,10 +86,15 @@ class FieldsBuilder
 
     public function buildCustomerFields($customer)
     {
-        $fields = [
-            ['key' => self::SUBSCRIBER_GROUP . ".Firstname", 'value' => $customer->getFirstname()],
-            ['key' => self::SUBSCRIBER_GROUP . ".Lastname", 'value' => $customer->getLastname()]
-        ];
+        $fields = [];
+
+        if ($customer->getFirstname()) {
+            $fields[] = ['key' => self::SUBSCRIBER_GROUP . ".Firstname", 'value' => $customer->getFirstname()];
+        }
+
+        if ($customer->getLastname()) {
+            $fields[] = ['key' => self::SUBSCRIBER_GROUP . ".Lastname", 'value' => $customer->getLastname()];
+        }
 
         if ($customer->getDob()) {
             $fields[] = ['key' => self::SUBSCRIBER_GROUP . ".BirthDate", 'value' => $customer->getDob()];

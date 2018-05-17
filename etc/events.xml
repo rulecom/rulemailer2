@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
-  <event name="checkout_submit_all_after">
-    <observer name="rule_rulemailer_checkout_obs" instance="Rule\RuleMailer\Observer\CheckoutObserver" />
-  </event>
-  <event name="newsletter_subscriber_save_before">
-    <observer name="rule_rulemailer_subscription_obs" instance="Rule\RuleMailer\Observer\SubscriptionObserver" />
-  </event>
-  <event name="checkout_cart_save_after">
-    <observer name="rule_rulemailer_cart_obs" instance="Rule\RuleMailer\Observer\CartObserver" />
-  </event>
+    <event name="checkout_submit_all_after">
+        <observer name="rule_rulemailer_checkout_obs" instance="Rule\RuleMailer\Observer\CheckoutObserver"/>
+    </event>
+    <event name="newsletter_subscriber_save_before">
+        <observer name="rule_rulemailer_subscription_obs" instance="Rule\RuleMailer\Observer\SubscriptionObserver"/>
+    </event>
+    <event name="checkout_cart_save_after">
+        <observer name="rule_rulemailer_cart_obs" instance="Rule\RuleMailer\Observer\CartObserver"/>
+    </event>
 </config>
