@@ -62,7 +62,7 @@ class AccountManagement
         \Magento\Customer\Model\AccountManagement $subject,
         \Closure $proceed,
         $customerEmail,
-        $websiteId
+        $websiteId = null
     ) {
         // Perform the original request
         $originalResult = $proceed($customerEmail, $websiteId);
@@ -109,7 +109,7 @@ class AccountManagement
             // Do nothing, silently continue with normal operations
         }
 
-        // Return the orginal result
+        // Return the original result
         return $originalResult;
     }
 }
