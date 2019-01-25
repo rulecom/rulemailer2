@@ -2,7 +2,7 @@
 
 use Psr\Log\LoggerInterface;
 use Magento\Framework\Event\ObserverInterface;
-use Magento\Framework\DataObject as Object;
+use Magento\Framework\DataObject;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
