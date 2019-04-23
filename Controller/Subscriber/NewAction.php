@@ -75,7 +75,6 @@ class NewAction extends \Magento\Newsletter\Controller\Subscriber
     		// invalid form key
 			$this->logger->info("Form_Key:Invalid Form Key");
         }
-        $this->logger->info("Form_Key:Valid Form Key");
         
 		if ($this->getRequest()->isPost() && $this->getRequest()->getPost('email')) {
             $email = (string)$this->getRequest()->getPost('email');
