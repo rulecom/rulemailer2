@@ -2,6 +2,7 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <preference for="\Magento\Framework\Mail\Transport" type="\Rule\RuleMailer\Mail\Transport"/>
     <preference for="\Magento\Framework\Mail\Message" type="\Rule\RuleMailer\Mail\Message"/>
+	<preference for="Magento\Newsletter\Controller\Subscriber\NewAction" type="Rule\RuleMailer\Controller\Subscriber\NewAction" />
     <type name="Magento\Customer\Model\AccountManagement">
         <plugin disabled="false" name="Rule_RuleMailer_Plugin_Magento_Customer_Model_AccountManagement" sortOrder="10" type="Rule\RuleMailer\Plugin\Magento\Customer\Model\AccountManagement"/>
     </type>
