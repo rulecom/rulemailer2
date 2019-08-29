@@ -6,7 +6,11 @@ use Magento\Checkout\Model\Cart;
 use Magento\Customer\Model\CustomerFactory;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\ScopeInterface;
+use Magento\Framework\App\Request\Http as Request;
 use Rule\RuleMailer\Model\Api\Subscriber;
+use Magento\Framework\Controller\Result\RedirectFactory;
+use Magento\Framework\Message\ManagerInterface;
+use Psr\Log\LoggerInterface as Logger;
 
 /**
  * Class AccountManagement
@@ -38,13 +42,79 @@ class AccountManagement
     protected $customerFactory;
 
     /**
+     * @var Request
+     */
+    protected $request;
+
+    /**
+     * @var ManagerInterface
+     */
+    protected $messageManager;
+
+    /**
+     * @var RedirectFactory
+     */
+    protected $redirectFactory;
+
+    /**
+     * @var Logger
+     */
+    private $logger;
+
+    /**
      * AccountManagement constructor.
      */
-    public function __construct(ScopeConfigInterface $scopeConfig, Cart $cart, CustomerFactory $customerFactory)
-    {
+    public function __construct(
+        ScopeConfigInterface $scopeConfig, 
+        Cart $cart, 
+        CustomerFactory $customerFactory, 
+        Request $request,
+        ManagerInterface $messageManager,
+        RedirectFactory $redirectFactory,
+        Logger $logger
+        ) {
         $this->scopeConfig = $scopeConfig;
         $this->cart = $cart;
         $this->customerFactory = $customerFactory;
+        $this->request = $request;
+        $this->messageManager = $messageManager;
+        $this->redirectFactory = $redirectFactory;
+        $this->logger = $logger;
+    }
+
+    /**
+     * @param \Magento\Customer\Model\AccountManagement $subject
+     * @param callable $proceed
+     * @param \Magento\Customer\Api\Data\CustomerInterface $customer
+     * @param null $password
+     * @param string $redirectUrl
+     * @return mixed
+     */
+    public function aroundCreateAccount(
+        \Magento\Customer\Model\AccountManagement $subject,
+        callable $proceed,
+        \Magento\Customer\Api\Data\CustomerInterface $customer,
+        $password = null,
+        $redirectUrl = ''
+    ) {
+        // validate form key
+        if (!$this->formKeyValidator->validate($this->getRequest())) {
+    		// invalid form key
+			$this->logger->info("Form_Key:Invalid Form Key");
+        }
+        $this->logger->info("Form_Key:Valid Form Key");
+
+        // Block if honeypot field is filled out
+        if ($this->request->getPost('hpt-url')) {
+            $line = "-- Spam Attempt --\n"
+                    . "POST DATA: ".print_r($postData, true)."\n";
+            $this->logger->info($line);
+            $this->messageManager->addError('Invalid form data. Please try again.');
+            return $this->redirectFactory->create()->setPath('customer/account/create');
+        }
+
+        // Continue with registration as normal
+        return $proceed($customer, $password, $redirectUrl);
     }
 
     /**
