@@ -11,6 +11,7 @@ use Rule\RuleMailer\Model\Api\Subscriber;
 use Magento\Framework\Controller\Result\RedirectFactory;
 use Magento\Framework\Message\ManagerInterface;
 use Psr\Log\LoggerInterface as Logger;
+use Magento\Framework\Data\Form\FormKey\Validator;
 
 /**
  * Class AccountManagement
@@ -62,6 +63,11 @@ class AccountManagement
     private $logger;
 
     /**
+     * @var Validator
+     */
+    private $formKeyValidator;
+
+    /**
      * AccountManagement constructor.
      */
     public function __construct(
@@ -71,7 +77,8 @@ class AccountManagement
         Request $request,
         ManagerInterface $messageManager,
         RedirectFactory $redirectFactory,
-        Logger $logger
+        Logger $logger,
+        Validator $formKeyValidator
         ) {
         $this->scopeConfig = $scopeConfig;
         $this->cart = $cart;
@@ -80,6 +87,7 @@ class AccountManagement
         $this->messageManager = $messageManager;
         $this->redirectFactory = $redirectFactory;
         $this->logger = $logger;
+        $this->formKeyValidator = $formKeyValidator;
     }
 
     /**
