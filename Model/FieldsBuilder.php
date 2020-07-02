@@ -86,7 +86,9 @@ class FieldsBuilder
 
     public function buildCustomerFields($customer)
     {
-        $fields = [];
+        $fields = [
+            ['key' => self::SUBSCRIBER_GROUP . ".Source", 'value' => 'MagentoRule']
+        ];
 
         if ($customer->getFirstname()) {
             $fields[] = ['key' => self::SUBSCRIBER_GROUP . ".Firstname", 'value' => $customer->getFirstname()];
