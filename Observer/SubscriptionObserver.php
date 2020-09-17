@@ -1,11 +1,9 @@
 <?php namespace Rule\RuleMailer\Observer;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Locale\Resolver;
-use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 use Rule\RuleMailer\Model\Api\Subscriber;
@@ -20,7 +18,7 @@ class SubscriptionObserver implements ObserverInterface
     /**
      * @var Subscriber
      */
-    private $subscriberApi;
+    private $subscriber;
 
     /**
      * @var ScopeConfigInterface
@@ -52,15 +50,15 @@ class SubscriptionObserver implements ObserverInterface
         ScopeConfigInterface $scopeConfig,
         LoggerInterface $logger,
         StoreManagerInterface $storeManager,
-        Resolver $resolver
+        Resolver $resolver,
+        Subscriber $subscriber
     ) {
+        $this->subscriber = $subscriber;
         $this->logger = $logger;
         $this->config = $scopeConfig;
         $this->storeManager = $storeManager;
         $this->resolver = $resolver;
 
-        $apiKey = $this->config->getValue('rule_rulemailer/general/api_key', ScopeInterface::SCOPE_STORE);
-        $this->subscriberApi = new Subscriber($apiKey);
     }
 
     /**
@@ -89,7 +87,7 @@ class SubscriptionObserver implements ObserverInterface
                 ['key' => self::NEWSLETTER_GROUP . '.Language', 'value' => $this->resolver->getLocale()],
             ];
 
-            $this->subscriberApi->addSubscriber($event->getSubscriber()->getEmail(), $tags, $fields);
+            $this->subscriber->addSubscriber($event->getSubscriber()->getEmail(), $tags, $fields);
         } catch (\Exception $e) {
             $this->logger->info("Failer to send subscriber: " . $e->getMessage());
         }

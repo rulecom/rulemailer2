@@ -13,11 +13,13 @@ use Magento\Customer\Model\CustomerFactory;
 
 class CheckoutObserver implements ObserverInterface
 {
-    private $subscriberApi;
+    private $subscriber;
 
     private $config;
 
     private $customerFactory;
+
+    private $customerSession;
 
     private $logger;
 
@@ -25,15 +27,14 @@ class CheckoutObserver implements ObserverInterface
         ScopeConfigInterface $scopeConfig,
         Session $customerSession,
         CustomerFactory $customerFactory,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        Subscriber $subscriber
     ) {
+        $this->subscriber = $subscriber;
         $this->logger = $logger;
         $this->config = $scopeConfig;
         $this->customerFactory = $customerFactory;
         $this->customerSession = $customerSession;
-
-        $apiKey = $this->config->getValue('rule_rulemailer/general/api_key', ScopeInterface::SCOPE_STORE);
-        $this->subscriberApi = new Subscriber($apiKey);
     }
 
     public function execute(Observer $observer)
@@ -51,7 +52,7 @@ class CheckoutObserver implements ObserverInterface
                 $customer->setLastname($event->getOrder()->getBillingAddress()->getLastname());
             }
 
-            $this->subscriberApi->completeOrder($customer, $event->getOrder(), $event->getQuote());
+            $this->subscriber->completeOrder($customer, $event->getOrder(), $event->getQuote());
         } catch (\Exception $e) {
             $this->logger->info("Filed to complete order: " . $e->getMessage());
         }

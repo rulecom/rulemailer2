@@ -2,7 +2,6 @@
 
 namespace Rule\RuleMailer\Model\Api;
 
-use Magento\Customer\Model\Customer;
 use Rule\ApiWrapper\ApiFactory;
 use Rule\RuleMailer\Model\FieldsBuilder;
 
@@ -24,7 +23,7 @@ class Subscriber
     const CHECKOUT_COMPLETE_TAG = 'Order';
 
     /**
-     * @var
+     * @var\Rule\ApiWrapper\Api
      */
     private $subscriberApi;
 
@@ -34,14 +33,42 @@ class Subscriber
     private $fieldsBuilder;
 
     /**
+     * @var \Rule\RuleMailer\Helper\Data
+     */
+    private $helper;
+
+    /**
      * Subscriber constructor.
      *
      * @param $apiKey
+     * @param null $storeManager
+     * @param \Rule\RuleMailer\Helper\Data $helper
+     * @throws \Rule\ApiWrapper\Api\Exception\InvalidResourceException
      */
-    public function __construct($apiKey, $storeManager=null)
+    public function __construct(\Rule\RuleMailer\Helper\Data $helper)
     {
+        $apiKey = $helper->getApiKey();
+        $this->helper = $helper;
         $this->subscriberApi = ApiFactory::make($apiKey, 'subscriber');
-        $this->fieldsBuilder = new FieldsBuilder($storeManager);
+        $this->fieldsBuilder = new FieldsBuilder();
+    }
+
+    public function makeFields($data) {
+        $result = [];
+        foreach ($data as $key=>$value) {
+            if (is_null($value)) {
+                continue;
+            }
+
+            $item = ['key' => $key, 'value' => $value];
+            if (is_array($value) || is_object($value)) {
+                $item['value'] = json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+                $item['type'] = 'json';
+            }
+
+            $result[] = $item;
+        }
+        return $result;
     }
 
     /**
@@ -87,9 +114,18 @@ class Subscriber
             'automation'          => 'reset'
         ];
 
-        $customerFields = $this->fieldsBuilder->buildCustomerFields($customer);
-        $cartFields = $this->fieldsBuilder->buildCartFields($quote);
-        $subscriber['fields'] = array_merge($customerFields, $cartFields);
+         $data = $this->helper->extractValues([
+             'cart' => $quote,
+             'cart.products' => $this->helper->getQuoteProducts($quote),
+             'cart.product_categories' => $this->helper->getProductCategories($quote),
+             'customer' => $customer
+             ], $this->helper->getMetaFields());
+         $fields = $this->makeFields($data);
+        $subscriber['fields'] = $fields;
+
+        // $customerFields = $this->fieldsBuilder->buildCustomerFields($customer);
+        // $cartFields = $this->fieldsBuilder->buildCartFields($quote);
+        // $subscriber['fields'] = array_merge($customerFields, $cartFields);
 
         $result = $this->subscriberApi->create($subscriber);
     }
@@ -109,9 +145,21 @@ class Subscriber
             'automation'          => 'reset'
         ];
 
-        $customerFields = $this->fieldsBuilder->buildCustomerFields($customer);
-        $orderFields = $this->fieldsBuilder->buildOrderFields($order, $quote);
-        $subscriber['fields'] = array_merge($customerFields, $orderFields);
+        $data = $this->helper->extractValues([
+            'order' => $order,
+            'order.store' => $order->getStore(),
+            'order.cart' => $quote,
+            'order.cart.products' => $this->helper->getQuoteProducts($quote),
+            'order.cart.product_categories' => $this->helper->getProductCategories($quote),
+            'address' => $order->getShippingAddressId() ? $order->getShippingAddressId() : $order->getBillingAddressId(),
+            'customer' => $customer
+        ], $this->helper->getMetaFields());
+        $fields = $this->makeFields($data);
+        $subscriber['fields'] = $fields;
+
+        // $customerFields = $this->fieldsBuilder->buildCustomerFields($customer);
+        // $orderFields = $this->fieldsBuilder->buildOrderFields($order, $quote);
+        // $subscriber['fields'] = array_merge($customerFields, $orderFields);
 
         $result = $this->subscriberApi->create($subscriber);
     }

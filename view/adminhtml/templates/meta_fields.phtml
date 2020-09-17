@@ -1,0 +1,124 @@
+<table id="<?= $element->getId() ?>_mapping"></table>
+
+<table id="<?= $element->getId() ?>_add">
+    <tr>
+        <td width="100%">
+            <select id="<?= $element->getId() ?>_add_option">
+                <option value="">Custom</option>
+                <?php foreach ($sources as $key=>$val): ?>
+                <option value="<?= $key ?>"><?= $val ?></option>
+                <?php endforeach; ?>
+            </select>
+        </td>
+        <td><div id="<?= $element->getId() ?>_add_button" class="action-default" style="cursor: pointer">&#10010;</div></td>
+    </tr>
+</table>
+
+<br/><hr/>
+<table id="<?= $element->getId() ?>_preview" align="center" style="width: 90%">
+    <tr>
+        <td><input type="text" id="<?= $element->getId() ?>_preview_id" size="5" placeholder="#" style="text-align: center"/></td>
+        <td>
+            <select id="<?= $element->getId() ?>_preview_subject">
+                <option value="order">Order</option>
+                <option value="customer">Customer</option>
+                <option value="quote">Quote</option>
+            </select>
+        </td>
+        <td>
+            <div id="<?= $element->getId() ?>_button_preview" class="action-default" style="cursor: pointer">Preview</div>
+            <div id="<?= $element->getId() ?>_button_test" class="action-default" style="cursor: pointer">Test</div>
+        </td>
+    </tr>
+</table>
+
+<input type="hidden" id="<?= $element->getId() ?>_value" name="<?= $element->getName() ?>" value="<?= $value ?>" />
+<script>
+    require(["jquery"], function($) {
+        let sources = <?= json_encode($sources) ?>;
+        let values = <?= empty($value)?"{}":$value ?>;
+
+        let id = '<?= $element->getId() ?>';
+        let url = "<?= $block->getUrl('rule_rulemailer/preview', ['_current' => true, '_use_rewrite' => true]); ?>";
+
+        let table = $('#' + id + '_mapping');
+        let result = $('#' + id + '_value');
+
+        $('#' + id + '_add_button').click(() => {
+            let value = $('#' + id + '_add_option').val();
+            let key = value.replace(/(^\w|[._]\w)/g, m => m.replace('_', '').toUpperCase());
+            values[key] = value;
+            refreshTable();
+        });
+
+        let refreshTable = () => {
+            result.val(JSON.stringify(values));
+            table.html('');
+
+            if (Object.keys(values).length > 0) {
+                let tr = $('<tr>');
+                tr.append($('<th>').append('<span>Meta Attribute</span>'));
+                tr.append($('<th>').append('<span>Source</span>'));
+                tr.append($('<th>'));
+                table.append(tr);
+            }
+
+            $.each(values, (key, value) => {
+                let tr = $('<tr>');
+                let meta = $('<input type="text">');
+                let source = $('<input type="text">');
+
+                meta.blur(()=>{
+                    if (meta.val() !== key) {
+                        values[meta.val()] = source.val();
+                        delete values[key];
+                        refreshTable();
+                    }
+                });
+
+                source.attr('title', value in sources ? sources[value] : value);
+                source.blur(()=>{
+                    values[key] = source.val();
+                    refreshTable();
+                });
+
+                tr.append($('<td>').append(meta.val(key)));
+                tr.append($('<td>').append(source.val(value)));
+                tr.append($('<td>').append($('<span class="action-default" style="cursor: pointer">&#10006;</span>').click(()=>{
+                    delete values[key];
+                    refreshTable();
+                })));
+                table.append(tr);
+            });
+        };
+        refreshTable();
+
+        let validate = (test) => {
+            let previewId = $('#' + id + '_preview_id');
+            if (previewId.val() === '') {
+                alert('Subject # is required');
+                return;
+            }
+
+            let form = $('<form id="request">');
+            form.attr('action', url);
+
+            form.append($('<input type="hidden" name="id">').val(previewId.val()));
+
+            form.append($('<input type="hidden" name="subject">').val(
+                $('#' + id + '_preview_subject').val()
+            ));
+
+            if (test) {
+                form.append($('<input type="hidden" name="fields">').val(result.val()));
+            }
+
+            let wnd = window.open("");
+            wnd.document.body.innerHTML = form.prop('outerHTML');
+            wnd.document.getElementById('request').submit();
+        };
+
+        $('#' + id + '_button_preview').click(() => { validate(false) });
+        $('#' + id + '_button_test').click(() => { validate(true) });
+    });
+</script>
