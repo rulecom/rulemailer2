@@ -3,14 +3,26 @@
 use Psr\Log\LoggerInterface;
 use Magento\Framework\Mail\Transport as MagentoTransport;
 use Magento\Framework\Mail\MessageInterface;
-use Rule\ApiWrapper\ApiFactory;
 use Rule\RuleMailer\Helper\Data;
 use Rule\RuleMailer\Model\Api\Transaction;
 
+/**
+ * Class Transport preference for \Magento\Framework\Mail\Transport class
+ */
 class Transport extends MagentoTransport
 {
+    /**
+     * @var LoggerInterface
+     */
     private $logger;
 
+    /**
+     * Transport constructor.
+     * @param MessageInterface $message
+     * @param Data $dataHelper
+     * @param LoggerInterface $logger
+     * @throws \Rule\ApiWrapper\Api\Exception\InvalidResourceException
+     */
     public function __construct(MessageInterface $message, Data $dataHelper, LoggerInterface $logger)
     {
         parent::__construct($message);
@@ -21,6 +33,9 @@ class Transport extends MagentoTransport
         $this->transactionalApi = new Transaction($this->dataHelper->getApiKey());
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function sendMessage()
     {
         if (!$this->dataHelper->getUseTransactional()) {

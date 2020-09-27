@@ -8,6 +8,9 @@ use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 use Rule\RuleMailer\Model\Api\Subscriber;
 
+/**
+ * Class SubscriptionObserver listener for 'newsletter_subscriber_save_before' event
+ */
 class SubscriptionObserver implements ObserverInterface
 {
     /**
@@ -58,7 +61,6 @@ class SubscriptionObserver implements ObserverInterface
         $this->config = $scopeConfig;
         $this->storeManager = $storeManager;
         $this->resolver = $resolver;
-
     }
 
     /**

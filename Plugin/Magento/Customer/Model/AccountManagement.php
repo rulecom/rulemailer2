@@ -1,5 +1,4 @@
 <?php
-
 namespace Rule\RuleMailer\Plugin\Magento\Customer\Model;
 
 use Magento\Checkout\Model\Cart;
@@ -14,11 +13,11 @@ use Psr\Log\LoggerInterface as Logger;
 use Magento\Framework\Data\Form\FormKey\Validator;
 
 /**
- * Class AccountManagement
+ * Class AccountManagement implements plugin over \Magento\Customer\Model\AccountManagement class
  *
- * @package  Rule\RuleMailer\Plugin\Magento\Customer\Model
  * @author   Robert Lord, Codepeak AB <robert@codepeak.se>
  * @link     https://codepeak.se
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class AccountManagement
 {
@@ -71,15 +70,15 @@ class AccountManagement
      * AccountManagement constructor.
      */
     public function __construct(
-        ScopeConfigInterface $scopeConfig, 
-        Cart $cart, 
-        CustomerFactory $customerFactory, 
+        ScopeConfigInterface $scopeConfig,
+        Cart $cart,
+        CustomerFactory $customerFactory,
         Request $request,
         ManagerInterface $messageManager,
         RedirectFactory $redirectFactory,
         Logger $logger,
         Validator $formKeyValidator
-        ) {
+    ) {
         $this->scopeConfig = $scopeConfig;
         $this->cart = $cart;
         $this->customerFactory = $customerFactory;
@@ -97,6 +96,7 @@ class AccountManagement
      * @param null $password
      * @param string $redirectUrl
      * @return mixed
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function aroundCreateAccount(
         \Magento\Customer\Model\AccountManagement $subject,
@@ -107,15 +107,14 @@ class AccountManagement
     ) {
         // validate form key
         if (!$this->formKeyValidator->validate($this->getRequest())) {
-    		// invalid form key
-			$this->logger->info("Form_Key:Invalid Form Key");
+            $this->logger->info("Form_Key:Invalid Form Key");
         }
         $this->logger->info("Form_Key:Valid Form Key");
 
         // Block if honeypot field is filled out
         if ($this->request->getPost('hpt-url')) {
-            $line = "-- Spam Attempt --\n"
-                    . "POST DATA: ".print_r($postData, true)."\n";
+            $postData = $this->request->getPost();
+            $line = "-- Spam Attempt --\nPOST DATA: " . json_encode($postData) . "\n";
             $this->logger->info($line);
             $this->messageManager->addError('Invalid form data. Please try again.');
             return $this->redirectFactory->create()->setPath('customer/account/create');
@@ -133,8 +132,8 @@ class AccountManagement
      * @param \Closure                                  $proceed
      * @param                                           $customerEmail
      * @param                                           $websiteId
-     *
      * @return mixed
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function aroundIsEmailAvailable(
         \Magento\Customer\Model\AccountManagement $subject,
@@ -184,7 +183,7 @@ class AccountManagement
                 $this->subscriberApi->updateCustomerCart($customer, $this->cart);
             }
         } catch (\Exception $e) {
-            // Do nothing, silently continue with normal operations
+            null;
         }
 
         // Return the original result

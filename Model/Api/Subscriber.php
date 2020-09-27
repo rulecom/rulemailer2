@@ -5,6 +5,9 @@ namespace Rule\RuleMailer\Model\Api;
 use Rule\ApiWrapper\ApiFactory;
 use Rule\RuleMailer\Model\FieldsBuilder;
 
+/**
+ * Class Subscriber implements base operations for 'subscriber'
+ */
 class Subscriber
 {
     /**
@@ -53,10 +56,15 @@ class Subscriber
         $this->fieldsBuilder = new FieldsBuilder();
     }
 
-    public function makeFields($data) {
+    /**
+     * @param $data
+     * @return array
+     */
+    public function makeFields($data)
+    {
         $result = [];
-        foreach ($data as $key=>$value) {
-            if (is_null($value)) {
+        foreach ($data as $key => $value) {
+            if ($value === null) {
                 continue;
             }
 
@@ -78,6 +86,7 @@ class Subscriber
      * @param array  $tags    Tags.
      * @param array  $fields  Fields.
      * @param array  $options Options.
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function addSubscriber($email, $tags = [], $fields = [], $options = [])
     {
@@ -92,18 +101,26 @@ class Subscriber
         $this->subscriberApi->create($subscriber);
     }
 
+    /**
+     * @param $email
+     */
     public function removeSubscriber($email)
     {
-        $result = $this->subscriberApi->deleteTag($email, self::NEWSLETTER_TAG);
+        $this->subscriberApi->deleteTag($email, self::NEWSLETTER_TAG);
     }
 
     // product name, quantity, price?, total price?
+
+    /**
+     * @param $customer
+     * @param $cart
+     */
     public function updateCustomerCart($customer, $cart)
     {
         try {
             $this->subscriberApi->deleteTag($customer->getEmail(), self::CART_IN_PROGRESS_TAG);
         } catch (\Exception $e) {
-            // Do nothing for now
+            null;
         }
 
         $quote = $cart->getQuote();
@@ -127,15 +144,20 @@ class Subscriber
         // $cartFields = $this->fieldsBuilder->buildCartFields($quote);
         // $subscriber['fields'] = array_merge($customerFields, $cartFields);
 
-        $result = $this->subscriberApi->create($subscriber);
+        $this->subscriberApi->create($subscriber);
     }
 
+    /**
+     * @param $customer
+     * @param $order
+     * @param $quote
+     */
     public function completeOrder($customer, $order, $quote)
     {
         try {
             $this->subscriberApi->deleteTag($customer->getEmail(), self::CART_IN_PROGRESS_TAG);
         } catch (\Exception $e) {
-
+            null;
         }
 
         $subscriber = [
@@ -151,7 +173,7 @@ class Subscriber
             'order.cart' => $quote,
             'order.cart.products' => $this->helper->getQuoteProducts($quote),
             'order.cart.product_categories' => $this->helper->getProductCategories($quote),
-            'address' => $order->getShippingAddressId() ? $order->getShippingAddressId() : $order->getBillingAddressId(),
+            'address' => $order->getShippingAddressId()?$order->getShippingAddressId():$order->getBillingAddressId(),
             'customer' => $customer
         ], $this->helper->getMetaFields());
         $fields = $this->makeFields($data);
@@ -161,6 +183,6 @@ class Subscriber
         // $orderFields = $this->fieldsBuilder->buildOrderFields($order, $quote);
         // $subscriber['fields'] = array_merge($customerFields, $orderFields);
 
-        $result = $this->subscriberApi->create($subscriber);
+        $this->subscriberApi->create($subscriber);
     }
 }

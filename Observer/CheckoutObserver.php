@@ -2,27 +2,51 @@
 
 use Psr\Log\LoggerInterface;
 use Magento\Framework\Event\ObserverInterface;
-use Magento\Framework\DataObject;
 use Magento\Framework\Event\Observer;
-use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Store\Model\ScopeInterface;
 use Magento\Customer\Model\Session;
 use Rule\RuleMailer\Model\Api\Subscriber;
 use Magento\Customer\Model\CustomerFactory;
 
+/**
+ * Class CheckoutObserver listener for 'checkout_submit_all_after' event
+ * @SuppressWarnings(PHPMD.CookieAndSessionMisuse)
+ */
 class CheckoutObserver implements ObserverInterface
 {
+    /**
+     * @var Subscriber
+     */
     private $subscriber;
 
+    /**
+     * @var ScopeConfigInterface
+     */
     private $config;
 
+    /**
+     * @var CustomerFactory
+     */
     private $customerFactory;
 
+    /**
+     * @var Session
+     */
     private $customerSession;
 
+    /**
+     * @var LoggerInterface
+     */
     private $logger;
 
+    /**
+     * CheckoutObserver constructor.
+     * @param ScopeConfigInterface $scopeConfig
+     * @param Session $customerSession
+     * @param CustomerFactory $customerFactory
+     * @param LoggerInterface $logger
+     * @param Subscriber $subscriber
+     */
     public function __construct(
         ScopeConfigInterface $scopeConfig,
         Session $customerSession,
@@ -37,6 +61,9 @@ class CheckoutObserver implements ObserverInterface
         $this->customerSession = $customerSession;
     }
 
+    /**
+     * @param Observer $observer
+     */
     public function execute(Observer $observer)
     {
         $event = $observer->getEvent();

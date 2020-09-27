@@ -1,24 +1,18 @@
 <?php
-
 namespace Rule\RuleMailer\Controller\Adminhtml\Preview;
 
 use Magento\Store\Model\StoreRepository;
 
 /**
+ * Class Index implements controller for admin-panel preview action
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class Index extends \Magento\Backend\App\Action implements \Magento\Framework\App\Action\HttpGetActionInterface
 {
     /**
-     * @var \Magento\Framework\Data\Form\FormKey\Validator
-     */
-    private $formKeyValidator;
-
-    /**
      * @var \Rule\RuleMailer\Model\FieldsBuilder
      */
     private $fieldsBuilder;
-
     /**
      * @var \Magento\Framework\Controller\Result\JsonFactory
      */
@@ -27,10 +21,6 @@ class Index extends \Magento\Backend\App\Action implements \Magento\Framework\Ap
      * @var \Magento\Sales\Model\OrderRepository
      */
     private $orderRepository;
-    /**
-     * @var \Magento\Framework\Serialize\SerializerInterface
-     */
-    private $serializer;
     /**
      * @var \Magento\Customer\Model\CustomerRepository
      */
@@ -69,6 +59,7 @@ class Index extends \Magento\Backend\App\Action implements \Magento\Framework\Ap
      * @param StoreRepository $storeRepository
      * @param \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository
      * @param \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         \Magento\Backend\App\Action\Context $context,
@@ -100,6 +91,7 @@ class Index extends \Magento\Backend\App\Action implements \Magento\Framework\Ap
      *
      * @throws \Magento\Framework\Exception\LocalizedException
      * @return \Magento\Framework\Controller\Result\Json
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     public function execute()
     {
@@ -151,7 +143,8 @@ class Index extends \Magento\Backend\App\Action implements \Magento\Framework\Ap
                     $object['order.cart.product_categories'] = $this->helper->getProductCategories($quote);
                     $object['order.store'] = $this->storeRepository->getById($order->getStoreId());
                     $object['address'] = $this->orderAddressRepository->get(
-                        $order->getShippingAddressId() ? $order->getShippingAddressId() : $order->getBillingAddressId());
+                        $order->getShippingAddressId() ? $order->getShippingAddressId() : $order->getBillingAddressId()
+                    );
                     $object['customer'] = $this->customerRepository->getById($order->getCustomerId());
                 } else {
                     $error = "Order #$id not found";

@@ -1,45 +1,60 @@
-<table id="<?= $element->getId() ?>_mapping"></table>
+<table id="<?= $block->escapeHtml($element->getId()) ?>_mapping"></table>
 
-<table id="<?= $element->getId() ?>_add">
+<table id="<?= $block->escapeHtml($element->getId()) ?>_add">
     <tr>
         <td width="100%">
-            <select id="<?= $element->getId() ?>_add_option">
+            <select id="<?= $block->escapeHtml($element->getId()) ?>_add_option">
                 <option value="">Custom</option>
-                <?php foreach ($sources as $key=>$val): ?>
-                <option value="<?= $key ?>"><?= $val ?></option>
+                <?php foreach ($sources as $key => $val): ?>
+                <option value="<?= $block->escapeHtml($key) ?>"><?= $block->escapeHtml($val) ?></option>
                 <?php endforeach; ?>
             </select>
         </td>
-        <td><div id="<?= $element->getId() ?>_add_button" class="action-default" style="cursor: pointer">&#10010;</div></td>
+        <td><div id="<?= $block->escapeHtml($element->getId()) ?>_add_button"
+                 class="action-default" style="cursor: pointer">&#10010;</div></td>
     </tr>
 </table>
 
 <br/><hr/>
-<table id="<?= $element->getId() ?>_preview" align="center" style="width: 90%">
+<table id="<?= $block->escapeHtml($element->getId()) ?>_preview" align="center" style="width: 90%">
     <tr>
-        <td><input type="text" id="<?= $element->getId() ?>_preview_id" size="5" placeholder="#" style="text-align: center"/></td>
         <td>
-            <select id="<?= $element->getId() ?>_preview_subject">
+            <input type="text"
+                   id="<?= $block->escapeHtml($element->getId()) ?>_preview_id"
+                   size="5"
+                   placeholder="#"
+                   style="text-align: center"/>
+        </td>
+        <td>
+            <select id="<?= $block->escapeHtml($element->getId()) ?>_preview_subject">
                 <option value="order">Order</option>
                 <option value="customer">Customer</option>
                 <option value="quote">Quote</option>
             </select>
         </td>
         <td>
-            <div id="<?= $element->getId() ?>_button_preview" class="action-default" style="cursor: pointer">Preview</div>
-            <div id="<?= $element->getId() ?>_button_test" class="action-default" style="cursor: pointer">Test</div>
+            <div id="<?= $block->escapeHtml($element->getId()) ?>_button_preview"
+                 class="action-default" style="cursor: pointer">Preview</div>
+            <div id="<?= $block->escapeHtml($element->getId()) ?>_button_test"
+                 class="action-default" style="cursor: pointer">Test</div>
         </td>
     </tr>
 </table>
 
-<input type="hidden" id="<?= $element->getId() ?>_value" name="<?= $element->getName() ?>" value="<?= $value ?>" />
+<input type="hidden"
+       id="<?= $block->escapeHtml($element->getId()) ?>_value"
+       name="<?= $block->escapeHtml($element->getName()) ?>"
+       value="<?= $block->escapeHtml($value) ?>" />
+
 <script>
     require(["jquery"], function($) {
-        let sources = <?= json_encode($sources) ?>;
-        let values = <?= empty($value)?"{}":$value ?>;
+        let sources = <?= /*@codingStandardsIgnoreStart*/ json_encode($sources) /*@codingStandardsIgnoreEnd*/?>;
+        let values = <?= /*@codingStandardsIgnoreStart*/ empty($value) ? "{}" : $value /*@codingStandardsIgnoreEnd*/?>;
 
-        let id = '<?= $element->getId() ?>';
-        let url = "<?= $block->getUrl('rule_rulemailer/preview', ['_current' => true, '_use_rewrite' => true]); ?>";
+        let id = '<?= $block->escapeHtml($element->getId()) ?>';
+        let url = "<?= $block->escapeHtml(
+            $block->getUrl('rule_rulemailer/preview', ['_current' => true, '_use_rewrite' => true])
+        ) ?>";
 
         let table = $('#' + id + '_mapping');
         let result = $('#' + id + '_value');
@@ -84,10 +99,12 @@
 
                 tr.append($('<td>').append(meta.val(key)));
                 tr.append($('<td>').append(source.val(value)));
-                tr.append($('<td>').append($('<span class="action-default" style="cursor: pointer">&#10006;</span>').click(()=>{
-                    delete values[key];
-                    refreshTable();
-                })));
+                tr.append($('<td>').append(
+                    $('<span class="action-default" style="cursor: pointer">&#10006;</span>').click(
+                        () => {
+                            delete values[key];
+                            refreshTable();
+                        })));
                 table.append(tr);
             });
         };

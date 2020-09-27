@@ -4,32 +4,60 @@ use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Store\Model\ScopeInterface;
 
+/**
+ * Class Data contains shared functions used cross extension
+ */
 class Data extends AbstractHelper
 {
-    public function __construct(Context $context)
-    {
-        parent::__construct($context);
-    }
-
+    /**
+     * @param null $store_id
+     * @return mixed
+     */
     public function getApiKey($store_id = null)
     {
-        return $this->scopeConfig->getValue('rule_rulemailer/general/api_key',
-            ScopeInterface::SCOPE_STORE, $store_id);
+        return $this->scopeConfig->getValue(
+            'rule_rulemailer/general/api_key',
+            ScopeInterface::SCOPE_STORE,
+            $store_id
+        );
     }
 
+    /**
+     * @param null $store_id
+     * @return mixed
+     */
     public function getUseTransactional($store_id = null)
     {
-        return $this->scopeConfig->getValue('rule_rulemailer/general/use_transactional',
-            ScopeInterface::SCOPE_STORE, $store_id);
+        return $this->scopeConfig->getValue(
+            'rule_rulemailer/general/use_transactional',
+            ScopeInterface::SCOPE_STORE,
+            $store_id
+        );
     }
 
+    /**
+     * @param null $store_id
+     * @return mixed
+     */
     public function getMetaFields($store_id = null)
     {
-        return json_decode($this->scopeConfig->getValue('rule_rulemailer/general/meta_fields',
-            ScopeInterface::SCOPE_STORE, $store_id), true);
+        return json_decode(
+            $this->scopeConfig->getValue(
+                'rule_rulemailer/general/meta_fields',
+                ScopeInterface::SCOPE_STORE,
+                $store_id
+            ),
+            true
+        );
     }
 
-    public function getMethods($subject, $prefix='') {
+    /**
+     * @param $subject
+     * @param string $prefix
+     * @return array
+     */
+    public function getMethods($subject, $prefix = '')
+    {
         $result = [];
         try {
             $class = new \ReflectionClass($subject);
@@ -47,20 +75,38 @@ class Data extends AbstractHelper
                     $result[$key] = $label;
                 }
             }
-        }catch (\ReflectionException $e) {
-
+        } catch (\ReflectionException $e) {
+            null;
         }
         return $result;
     }
 
-    public function isNumericArray($subject) {
+    /**
+     * @param $subject
+     * @return bool
+     */
+    public function isNumericArray($subject)
+    {
         if (is_array($subject)) {
-            return count(array_filter($subject, function($k) { return !is_int($k); }, ARRAY_FILTER_USE_KEY)) == 0;
+            return count(
+                array_filter(
+                    $subject,
+                    function ($k) {
+                        return !is_int($k);
+                    },
+                    ARRAY_FILTER_USE_KEY
+                )
+            ) == 0;
         }
         return false;
     }
 
-    public function collapseArray(&$subject) {
+    /**
+     * @param $subject
+     * @return array
+     */
+    public function collapseArray(&$subject)
+    {
         if (is_array($subject)) {
             foreach ($subject as $key => $value) {
                 $path = explode('.', $key);
@@ -79,7 +125,16 @@ class Data extends AbstractHelper
         return $subject;
     }
 
-    public function extractValues($subject, $fields=[]) {
+    /**
+     * @param $subject
+     * @param array $fields
+     * @return array
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     */
+    public function extractValues($subject, $fields = [])
+    {
         $result = [];
 
         // checking if given object is class
@@ -88,15 +143,17 @@ class Data extends AbstractHelper
             if (is_object($subject)) {
                 $class = new \ReflectionClass($subject);
             }
-        } catch (\Exception $e) { }
+        } catch (\Exception $e) {
+            null;
+        }
 
         // if no fields path specified, taking all possible of them
         if (empty($fields)) {
             if (is_array($subject)) {
                 $fields = array_keys($subject);
-            } else if ($subject instanceof \Magento\Framework\DataObject) {
+            } elseif ($subject instanceof \Magento\Framework\DataObject) {
                 $fields = array_keys($subject->getData());
-            } else if ($class != null) {
+            } elseif ($class != null) {
                 $fields = array_keys($this->getMethods($subject));
             } else {
                 return $subject;
@@ -105,7 +162,7 @@ class Data extends AbstractHelper
 
         // expanding path key
         $keys = [];
-        foreach ($fields as $key=>$field) {
+        foreach ($fields as $key => $field) {
             if (strpos($field, '{') === 0) {
                 continue;
             }
@@ -136,7 +193,7 @@ class Data extends AbstractHelper
                     $value = $this->extractValues($value);
                 }
                 if (is_array($value)) {
-                    foreach ($value as $k=>$v) {
+                    foreach ($value as $k => $v) {
                         $result[$k] = $v;
                     }
                 } else {
@@ -146,14 +203,14 @@ class Data extends AbstractHelper
         }
 
         // collecting key values
-        foreach ($keys as $key=>$values) {
+        foreach ($keys as $key => $values) {
             $value = null;
 
             if (is_array($subject) && array_key_exists($key, $subject)) {
                 $value = $subject[$key];
-            } else if ($subject instanceof \Magento\Framework\DataObject && $subject->hasData($key)) {
+            } elseif ($subject instanceof \Magento\Framework\DataObject && $subject->hasData($key)) {
                 $value = $subject->getData($key);
-            } else if ($class != null) {
+            } elseif ($class != null) {
                 $method = 'get' . str_replace('_', '', ucwords($key, "_"));
                 if ($class->hasMethod($method) && $class->getMethod($method)->getNumberOfParameters() == 0) {
                     $value = $subject->$method();
@@ -169,7 +226,7 @@ class Data extends AbstractHelper
             }
 
             if (is_array($value)) {
-                foreach ($value as $k=>$v) {
+                foreach ($value as $k => $v) {
                     $result[trim($key . '.' . $k, '.')] = $v;
                 }
             } else {
@@ -177,21 +234,20 @@ class Data extends AbstractHelper
             }
         }
 
-
         if (!array_key_exists(0, $fields)) {
             $output = [];
             foreach ($fields as $key => $path) {
                 if (strpos($path, '{') === 0 || strpos($path, '"') === 0) {
                     $output[$key] = json_decode($path);
-                    if (is_null($output[$key])) {
-                        $output[$key] = json_decode(substr($path,1,-1));
+                    if ($output[$key] === null) {
+                        $output[$key] = json_decode(substr($path, 1, -1));
                     }
                     continue;
                 }
                 foreach ($result as $item => $value) {
                     if ($item == $path) {
                         $output[$key] = $value;
-                    } else if (strpos($item, $path)===0) {
+                    } elseif (strpos($item, $path)===0) {
                         if (!array_key_exists($key, $output)) {
                             $output[$key] = [];
                         }
@@ -205,10 +261,13 @@ class Data extends AbstractHelper
             $result = $output;
         }
 
-
         return $result;
     }
 
+    /**
+     * @param \Magento\Quote\Model\Quote $quote
+     * @return array
+     */
     public function getQuoteProducts(\Magento\Quote\Model\Quote $quote)
     {
         $products = [];
@@ -229,6 +288,10 @@ class Data extends AbstractHelper
         return $products;
     }
 
+    /**
+     * @param \Magento\Quote\Model\Quote $quote
+     * @return array
+     */
     public function getProductCategories(\Magento\Quote\Model\Quote $quote)
     {
         $categories = [];
@@ -239,7 +302,7 @@ class Data extends AbstractHelper
             foreach ($productCategories->getItems() as $categoryModel) {
                 $category = $categoryModel->getName();
 
-                if (!is_null($category) && !in_array($category, $categories)) {
+                if ($category != null && !in_array($category, $categories)) {
                     $categories[] = $category;
                 }
             }

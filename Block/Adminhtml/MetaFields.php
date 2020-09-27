@@ -9,9 +9,8 @@ class MetaFields extends \Magento\Config\Block\System\Config\Form\Field
 {
     /** @var \Rule\RuleMailer\Helper\Data */
     private $helper;
-    /**
-     * @var \Magento\Framework\App\Config\ScopeConfigInterface
-     */
+
+    /** @var \Magento\Framework\App\Config\ScopeConfigInterface */
     private $scopeConfig;
 
     /**
@@ -28,23 +27,32 @@ class MetaFields extends \Magento\Config\Block\System\Config\Form\Field
         Context $context,
         array $data = [],
         SecureHtmlRenderer $secureRenderer = null
-    ){
+    ) {
         $this->helper = $helper;
         parent::__construct($context, $data, $secureRenderer);
         $this->scopeConfig = $scopeConfig;
     }
 
-
-    protected function getSources() {
+    /**
+     * Returns elements
+     * @return array
+     */
+    protected function getSources()
+    {
         return array_merge(
-            $this->helper->getMethods('\Magento\Sales\Api\Data\OrderInterface', 'order'),
-            $this->helper->getMethods('\Magento\Sales\Api\Data\OrderAddressInterface', 'order.address'),
-            $this->helper->getMethods('\Magento\Quote\Api\Data\CartInterface', 'cart'),
-            $this->helper->getMethods('\Magento\Customer\Api\Data\CustomerInterface', 'customer')
+            $this->helper->getMethods(\Magento\Sales\Api\Data\OrderInterface::class, 'order'),
+            $this->helper->getMethods(\Magento\Sales\Api\Data\OrderAddressInterface::class, 'order.address'),
+            $this->helper->getMethods(\Magento\Quote\Api\Data\CartInterface::class, 'cart'),
+            $this->helper->getMethods(\Magento\Customer\Api\Data\CustomerInterface::class, 'customer')
         );
-
     }
 
+    /**
+     * Retrieve element HTML markup
+     * @param \Magento\Framework\Data\Form\Element\AbstractElement $element
+     * @return string
+     * @codingStandardsIgnoreStart
+     */
     protected function _getElementHtml(\Magento\Framework\Data\Form\Element\AbstractElement $element)
     {
         try {
@@ -53,7 +61,7 @@ class MetaFields extends \Magento\Config\Block\System\Config\Form\Field
 
             $this->assign('sources', $this->getSources());
             $this->assign('element', $element);
-            $this->assign('value',  $value);
+            $this->assign('value', $value);
             return $this->fetchView(
                 $this->getTemplateFile('Rule_RuleMailer::meta_fields.phtml')
             );
@@ -61,5 +69,4 @@ class MetaFields extends \Magento\Config\Block\System\Config\Form\Field
             return $e->getMessage();
         }
     }
-
 }

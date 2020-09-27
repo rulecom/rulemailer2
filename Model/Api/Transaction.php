@@ -3,15 +3,29 @@ namespace Rule\RuleMailer\Model\Api;
 
 use Rule\ApiWrapper\ApiFactory;
 
+/**
+ * Class Transaction holds transaction during API calls
+ */
 class Transaction
 {
+    /**
+     * @var \Rule\ApiWrapper\Api
+     */
     private $transactionApi;
 
+    /**
+     * Transaction constructor.
+     * @param $apiKey
+     * @throws \Rule\ApiWrapper\Api\Exception\InvalidResourceException
+     */
     public function __construct($apiKey)
     {
         $this->transactionApi = ApiFactory::make($apiKey, 'transaction');
     }
 
+    /**
+     * @param $message
+     */
     public function sendMessage($message)
     {
         $transaction = $this->buildTransaction($message);
@@ -23,6 +37,10 @@ class Transaction
         }
     }
 
+    /**
+     * @param $message
+     * @return array
+     */
     private function buildTransaction($message)
     {
         $html = $message->getBodyHtml(true);
