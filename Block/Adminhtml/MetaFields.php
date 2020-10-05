@@ -3,7 +3,6 @@ namespace Rule\RuleMailer\Block\Adminhtml;
 
 use Magento\Backend\Block\Template\Context;
 use Magento\Framework\Exception\ValidatorException;
-use Magento\Framework\View\Helper\SecureHtmlRenderer;
 
 class MetaFields extends \Magento\Config\Block\System\Config\Form\Field
 {
@@ -19,17 +18,15 @@ class MetaFields extends \Magento\Config\Block\System\Config\Form\Field
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      * @param Context $context
      * @param array $data
-     * @param SecureHtmlRenderer|null $secureRenderer
      */
     public function __construct(
         \Rule\RuleMailer\Helper\Data $helper,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         Context $context,
-        array $data = [],
-        SecureHtmlRenderer $secureRenderer = null
+        array $data = []
     ) {
         $this->helper = $helper;
-        parent::__construct($context, $data, $secureRenderer);
+        parent::__construct($context, $data);
         $this->scopeConfig = $scopeConfig;
     }
 
