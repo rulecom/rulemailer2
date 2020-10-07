@@ -117,7 +117,7 @@ class AccountManagement
         $redirectUrl = ''
     ) {
         // validate form key
-        if (!$this->formKeyValidator->validate($this->getRequest())) {
+        if (!$this->formKeyValidator->validate($this->request)) {
             $this->logger->info("Form_Key:Invalid Form Key");
         }
         $this->logger->info("Form_Key:Valid Form Key");
