@@ -68,6 +68,15 @@ class AccountManagement
 
     /**
      * AccountManagement constructor.
+     * @param ScopeConfigInterface $scopeConfig
+     * @param Cart $cart
+     * @param CustomerFactory $customerFactory
+     * @param Request $request
+     * @param ManagerInterface $messageManager
+     * @param RedirectFactory $redirectFactory
+     * @param Logger $logger
+     * @param Validator $formKeyValidator
+     * @param Subscriber $subscriberApi
      */
     public function __construct(
         ScopeConfigInterface $scopeConfig,
@@ -77,7 +86,8 @@ class AccountManagement
         ManagerInterface $messageManager,
         RedirectFactory $redirectFactory,
         Logger $logger,
-        Validator $formKeyValidator
+        Validator $formKeyValidator,
+        Subscriber $subscriberApi
     ) {
         $this->scopeConfig = $scopeConfig;
         $this->cart = $cart;
@@ -87,6 +97,7 @@ class AccountManagement
         $this->redirectFactory = $redirectFactory;
         $this->logger = $logger;
         $this->formKeyValidator = $formKeyValidator;
+        $this->subscriberApi = $subscriberApi;
     }
 
     /**
@@ -146,17 +157,11 @@ class AccountManagement
 
         // Let's make it safe to avoid any errors
         try {
-            // Fetch the API key
-            $apiKey = $this->scopeConfig->getValue('rule_rulemailer/general/api_key', ScopeInterface::SCOPE_STORE);
-
             // Fetch setting for aggressive abandoned cart
             $aggressive = $this->scopeConfig->getValue(
                 'rule_rulemailer/general/aggressive_abandoned_cart',
                 ScopeInterface::SCOPE_STORE
             );
-
-            // Fetch the subscriber API
-            $this->subscriberApi = new Subscriber($apiKey);
 
             // Default is that we don't send to Rule
             $sendToRule = false;
