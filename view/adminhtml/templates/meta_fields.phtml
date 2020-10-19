@@ -3,7 +3,8 @@
 <table id="<?= $block->escapeHtml($element->getId()) ?>_add">
     <tr>
         <td width="100%">
-            <select id="<?= $block->escapeHtml($element->getId()) ?>_add_option">
+            <input type="text" placeholder="Search.." id="<?= $block->escapeHtml($element->getId()) ?>_search" style="display: none"/>
+            <select id="<?= $block->escapeHtml($element->getId()) ?>_add_options" multiple="multiple">
                 <option value="">Custom</option>
                 <?php foreach ($sources as $key => $val): ?>
                 <option value="<?= $block->escapeHtml($key) ?>"><?= $block->escapeHtml($val) ?></option>
@@ -59,12 +60,50 @@
         let table = $('#' + id + '_mapping');
         let result = $('#' + id + '_value');
 
+        let refreshDisabled = () => {
+            $('#' + id + '_add_options option').each( (_, option) => {
+                let key = option.value.replace(/(^\w|[._]\w)/g, m => m.replace('_', '').toUpperCase());
+                if (key in values) {
+                    $(option).attr('disabled', 'disabled');
+                } else {
+                    $(option).removeAttr('disabled');
+                }
+                $(option).attr('data-key', key);
+            })
+        };
+        refreshDisabled();
+
         $('#' + id + '_add_button').click(() => {
-            let value = $('#' + id + '_add_option').val();
-            let key = value.replace(/(^\w|[._]\w)/g, m => m.replace('_', '').toUpperCase());
-            values[key] = value;
+            $('#' + id + '_add_options').find(':selected').each( (_, option) => {
+                option = $(option);
+                values[option.attr('data-key')] = option.val();
+                option.attr('disabled', 'disabled');
+                option.removeAttr('selected');
+            });
             refreshTable();
+            refreshDisabled();
         });
+
+        $('#' + id + '_search').keyup( (e) => {
+            let val = $(e.target).val().toLowerCase();
+            if (val === '') {
+                $(e.target).hide();
+                $('#' + id + '_add_options').focus();
+            }
+
+            $('#' + id + '_add_options option').each( (_, option) => {
+                if ($(option).text().toLowerCase().indexOf(val) === -1) {
+                    $(option).hide();
+                } else {
+                    $(option).show();
+                }
+            });
+        });
+
+        $('#' + id + '_add_options').keypress( (e) => {
+            $('#' + id + '_search').val(String.fromCharCode(e.which)).show().focus();
+        });
+
 
         let refreshTable = () => {
             result.val(JSON.stringify(values));
@@ -88,6 +127,7 @@
                         values[meta.val()] = source.val();
                         delete values[key];
                         refreshTable();
+                        refreshDisabled();
                     }
                 });
 
@@ -104,6 +144,7 @@
                         () => {
                             delete values[key];
                             refreshTable();
+                            refreshDisabled();
                         })));
                 table.append(tr);
             });

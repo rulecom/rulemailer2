@@ -173,7 +173,7 @@ class Subscriber
             'order.cart' => $quote,
             'order.cart.products' => $this->helper->getQuoteProducts($quote),
             'order.cart.product_categories' => $this->helper->getProductCategories($quote),
-            'address' => $order->getShippingAddressId()?$order->getShippingAddressId():$order->getBillingAddressId(),
+            'address' => $order->getShippingAddress()?$order->getShippingAddress():$order->getBillingAddress(),
             'customer' => $customer
         ], $this->helper->getMetaFields());
         $fields = $this->makeFields($data);

@@ -145,7 +145,11 @@ class Index extends \Magento\Backend\App\Action implements \Magento\Framework\Ap
                     $object['address'] = $this->orderAddressRepository->get(
                         $order->getShippingAddressId() ? $order->getShippingAddressId() : $order->getBillingAddressId()
                     );
-                    $object['customer'] = $this->customerRepository->getById($order->getCustomerId());
+                    if ($order->getCustomerId()) {
+                        $object['customer'] = $this->customerRepository->getById($order->getCustomerId());
+                    } elseif ($quote->getCustomer()) {
+                        $object['customer'] = $quote->getCustomer();
+                    }
                 } else {
                     $error = "Order #$id not found";
                 }
