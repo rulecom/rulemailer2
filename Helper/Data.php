@@ -128,14 +128,22 @@ class Data extends AbstractHelper
     /**
      * @param $subject
      * @param array $fields
+     * @param array $stack
      * @return array
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
-    public function extractValues($subject, $fields = [])
+    public function extractValues($subject, $fields = [], $stack = [])
     {
         $result = [];
+
+        if (is_object($subject) && $fields != null) {
+            if (in_array($subject, $stack)) {
+                return 'cyclic reference';
+            }
+            $stack[] = $subject;
+        }
 
         // checking if given object is class
         $class = null;
@@ -190,7 +198,7 @@ class Data extends AbstractHelper
             } else {
                 $value = $subject;
                 if (is_array($value) || is_object($value)) {
-                    $value = $this->extractValues($value);
+                    $value = $this->extractValues($value, null, $stack);
                 }
                 if (is_array($value)) {
                     foreach ($value as $k => $v) {
@@ -222,7 +230,7 @@ class Data extends AbstractHelper
             }
 
             if (is_array($value) || is_object($value)) {
-                $value = $this->extractValues($value, $values);
+                $value = $this->extractValues($value, $values, $stack);
             }
 
             if (is_array($value)) {
