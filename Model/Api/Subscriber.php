@@ -23,7 +23,12 @@ class Subscriber
     /**
      * @var
      */
-    const CHECKOUT_COMPLETE_TAG = 'Order';
+    const CHECKOUT_COMPLETE_TAG = 'OrderCompleted';
+
+    /**
+     * @var
+     */
+    const SHIPPING_COMPLETE_TAG = 'OrderShipped';
 
     /**
      * @var\Rule\ApiWrapper\Api
@@ -41,19 +46,24 @@ class Subscriber
     private $helper;
 
     /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    private $logger;
+
+    /**
      * Subscriber constructor.
      *
-     * @param $apiKey
-     * @param null $storeManager
      * @param \Rule\RuleMailer\Helper\Data $helper
+     * @param \Psr\Log\LoggerInterface $logger
      * @throws \Rule\ApiWrapper\Api\Exception\InvalidResourceException
      */
-    public function __construct(\Rule\RuleMailer\Helper\Data $helper)
+    public function __construct(\Rule\RuleMailer\Helper\Data $helper, \Psr\Log\LoggerInterface $logger)
     {
         $apiKey = $helper->getApiKey();
         $this->helper = $helper;
         $this->subscriberApi = ApiFactory::make($apiKey, 'subscriber');
         $this->fieldsBuilder = new FieldsBuilder();
+        $this->logger = $logger;
     }
 
     /**
@@ -62,6 +72,10 @@ class Subscriber
      */
     public function makeFields($data)
     {
+        if (!array_key_exists('Subscriber.Source', $data)) {
+            $data['Subscriber.Source'] = 'MagentoRule';
+        }
+
         $result = [];
         foreach ($data as $key => $value) {
             if ($value === null) {
@@ -120,7 +134,7 @@ class Subscriber
         try {
             $this->subscriberApi->deleteTag($customer->getEmail(), self::CART_IN_PROGRESS_TAG);
         } catch (\Exception $e) {
-            null;
+            $this->logger->error($e);
         }
 
         $quote = $cart->getQuote();
@@ -144,7 +158,18 @@ class Subscriber
         // $cartFields = $this->fieldsBuilder->buildCartFields($quote);
         // $subscriber['fields'] = array_merge($customerFields, $cartFields);
 
-        $this->subscriberApi->create($subscriber);
+        $response = $this->subscriberApi->create($subscriber);
+        try {
+            $phone = !empty($customer->getTelephone())?$customer->getTelephone():
+                ($customer->getDefaultBillingAddress()?$customer->getDefaultBillingAddress()->getTelephone():
+                    ($customer->getDefaultShippingAddress()?$customer->getDefaultShippingAddress()->getTelephone():
+                        ($quote->getBillingAddress()?$quote->getBillingAddress()->getTelephone():
+                            ($quote->getShippingAddress()?$quote->getShippingAddress()->getTelephone(): null))));
+
+            $this->subscriberApi->update($response['subscriber']['id'], ['phone_number' => $phone]);
+        } catch (\Exception $e) {
+            $this->logger->error($e);
+        }
     }
 
     /**
@@ -157,7 +182,7 @@ class Subscriber
         try {
             $this->subscriberApi->deleteTag($customer->getEmail(), self::CART_IN_PROGRESS_TAG);
         } catch (\Exception $e) {
-            null;
+            $this->logger->error($e);
         }
 
         $subscriber = [
@@ -183,6 +208,63 @@ class Subscriber
         // $orderFields = $this->fieldsBuilder->buildOrderFields($order, $quote);
         // $subscriber['fields'] = array_merge($customerFields, $orderFields);
 
-        $this->subscriberApi->create($subscriber);
+        $response = $this->subscriberApi->create($subscriber);
+        try {
+            $phone = !empty($customer->getTelephone())?$customer->getTelephone():
+                ($customer->getDefaultBillingAddress()?$customer->getDefaultBillingAddress()->getTelephone():
+                    ($customer->getDefaultShippingAddress()?$customer->getDefaultShippingAddress()->getTelephone():
+                        ($quote->getBillingAddress()?$quote->getBillingAddress()->getTelephone():
+                            ($quote->getShippingAddress()?$quote->getShippingAddress()->getTelephone(): null))));
+
+            $this->subscriberApi->update($response['subscriber']['id'], ['phone_number' => $phone]);
+        } catch (\Exception $e) {
+            $this->logger->error($e);
+        }
+    }
+
+    /**
+     * @param \Magento\Customer\Model\Customer $customer
+     * @param \Magento\Sales\Model\Order $order
+     * @param \Magento\Sales\Model\Order\Shipment $shipment
+     */
+    public function completeShipping($customer, $order, $shipment)
+    {
+        try {
+            $this->subscriberApi->deleteTag($customer->getEmail(), self::CHECKOUT_COMPLETE_TAG);
+        } catch (\Exception $e) {
+            $this->logger->error($e);
+        }
+
+        $subscriber = [
+            'email'               => $customer->getEmail(),
+            'tags'                => [self::SHIPPING_COMPLETE_TAG],
+            'update_on_duplicate' => true,
+            'automation'          => 'reset'
+        ];
+
+        $data = $this->helper->extractValues([
+            'order' => $order,
+            'order.store' => $order->getStore(),
+            'shipment' => $shipment,
+            'shipment.products' => $this->helper->getShippingProducts($shipment),
+            'shipment.product_categories' => $this->helper->getShippingProductCategories($shipment),
+            'address' => $order->getShippingAddress()?$order->getShippingAddress():$order->getBillingAddress(),
+            'customer' => $customer
+        ], $this->helper->getMetaFields());
+        $fields = $this->makeFields($data);
+        $subscriber['fields'] = $fields;
+
+        $response = $this->subscriberApi->create($subscriber);
+        try {
+            $phone = !empty($customer->getTelephone())?$customer->getTelephone():
+                ($customer->getDefaultBillingAddress()?$customer->getDefaultBillingAddress()->getTelephone():
+                    ($customer->getDefaultShippingAddress()?$customer->getDefaultShippingAddress()->getTelephone():
+                        ($shipment->getBillingAddress()?$shipment->getBillingAddress()->getTelephone():
+                            ($shipment->getShippingAddress()?$shipment->getShippingAddress()->getTelephone(): null))));
+
+            $this->subscriberApi->update($response['subscriber']['id'], ['phone_number' => $phone]);
+        } catch (\Exception $e) {
+            $this->logger->error($e);
+        }
     }
 }

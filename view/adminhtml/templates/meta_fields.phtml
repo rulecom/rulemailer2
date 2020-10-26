@@ -3,7 +3,9 @@
 <table id="<?= $block->escapeHtml($element->getId()) ?>_add">
     <tr>
         <td width="100%">
-            <input type="text" placeholder="Search.." id="<?= $block->escapeHtml($element->getId()) ?>_search" style="display: none"/>
+            <input type="text"
+                   placeholder="Search..."
+                   id="<?= $block->escapeHtml($element->getId()) ?>_search" />
             <select id="<?= $block->escapeHtml($element->getId()) ?>_add_options" multiple="multiple">
                 <option value="">Custom</option>
                 <?php foreach ($sources as $key => $val): ?>
@@ -12,28 +14,42 @@
             </select>
         </td>
         <td><div id="<?= $block->escapeHtml($element->getId()) ?>_add_button"
-                 class="action-default" style="cursor: pointer">&#10010;</div></td>
+                 class="action-default"
+                 style="cursor: pointer">&#10010;</div></td>
     </tr>
 </table>
 
-<br/><hr/>
-<table id="<?= $block->escapeHtml($element->getId()) ?>_preview" align="center" style="width: 90%">
+<br/>
+<div id="<?= $block->escapeHtml($element->getId()) ?>_reset"
+     class="action-default"
+     style="cursor: pointer">Reset</div>
+<div id="<?= $block->escapeHtml($element->getId()) ?>_defaults"
+     class="action-default"
+     style="cursor: pointer">Reset to defaults</div>
+
+<hr/>
+
+<table id="<?= $block->escapeHtml($element->getId()) ?>_preview"
+       align="center"
+       style="width: 90%; min-width: 550px">
     <tr>
-        <td>
+        <td style="width: 40%">
             <input type="text"
                    id="<?= $block->escapeHtml($element->getId()) ?>_preview_id"
                    size="5"
                    placeholder="#"
                    style="text-align: center"/>
         </td>
-        <td>
+        <td style="width: 30%">
             <select id="<?= $block->escapeHtml($element->getId()) ?>_preview_subject">
                 <option value="order">Order</option>
                 <option value="customer">Customer</option>
                 <option value="quote">Quote</option>
+                <option value="shipment">Shipment</option>
+
             </select>
         </td>
-        <td>
+        <td style="text-wrap: none; width: 30%"">
             <div id="<?= $block->escapeHtml($element->getId()) ?>_button_preview"
                  class="action-default" style="cursor: pointer">Preview</div>
             <div id="<?= $block->escapeHtml($element->getId()) ?>_button_test"
@@ -50,7 +66,10 @@
 <script>
     require(["jquery"], function($) {
         let sources = <?= /*@codingStandardsIgnoreStart*/ json_encode($sources) /*@codingStandardsIgnoreEnd*/?>;
-        let values = <?= /*@codingStandardsIgnoreStart*/ empty($value) ? "{}" : $value /*@codingStandardsIgnoreEnd*/?>;
+        let reset = <?= /*@codingStandardsIgnoreStart*/ empty($value) ? "{}" : $value /*@codingStandardsIgnoreEnd*/?>;
+        let defaults = <?= /*@codingStandardsIgnoreStart*/ empty($defaults) ? "{}" : $defaults /*@codingStandardsIgnoreEnd*/?>;
+
+        let values = reset;
 
         let id = '<?= $block->escapeHtml($element->getId()) ?>';
         let url = "<?= $block->escapeHtml(
@@ -63,6 +82,10 @@
         let refreshDisabled = () => {
             $('#' + id + '_add_options option').each( (_, option) => {
                 let key = option.value.replace(/(^\w|[._]\w)/g, m => m.replace('_', '').toUpperCase());
+
+                let parts = key.split('.');
+                key = parts[0] + '.' + parts.slice(1).join('_');
+
                 if (key in values) {
                     $(option).attr('disabled', 'disabled');
                 } else {
@@ -72,6 +95,18 @@
             })
         };
         refreshDisabled();
+
+        $('#' + id + '_reset').click(() => {
+            values = reset;
+            refreshTable();
+            refreshDisabled();
+        });
+
+        $('#' + id + '_defaults').click(() => {
+            values = defaults;
+            refreshTable();
+            refreshDisabled();
+        });
 
         $('#' + id + '_add_button').click(() => {
             $('#' + id + '_add_options').find(':selected').each( (_, option) => {
@@ -86,10 +121,6 @@
 
         $('#' + id + '_search').keyup( (e) => {
             let val = $(e.target).val().toLowerCase();
-            if (val === '') {
-                $(e.target).hide();
-                $('#' + id + '_add_options').focus();
-            }
 
             $('#' + id + '_add_options option').each( (_, option) => {
                 if ($(option).text().toLowerCase().indexOf(val) === -1) {
@@ -123,6 +154,8 @@
                 let source = $('<input type="text">');
 
                 meta.blur(()=>{
+                    let parts = meta.val().split('.');
+                    meta.val(parts[0] + '.' + parts.slice(1).join('_'));
                     if (meta.val() !== key) {
                         values[meta.val()] = source.val();
                         delete values[key];

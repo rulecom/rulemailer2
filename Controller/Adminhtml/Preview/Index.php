@@ -45,6 +45,10 @@ class Index extends \Magento\Backend\App\Action implements \Magento\Framework\Ap
      * @var \Magento\Framework\Api\SearchCriteriaBuilder
      */
     private $searchCriteriaBuilder;
+    /**
+     * @var \Magento\Sales\Api\ShipmentRepositoryInterface
+     */
+    private $shipmentRepository;
 
     /**
      * Initialize dependencies.
@@ -56,6 +60,7 @@ class Index extends \Magento\Backend\App\Action implements \Magento\Framework\Ap
      * @param \Magento\Sales\Api\OrderRepositoryInterface $orderRepository
      * @param \Magento\Sales\Api\OrderAddressRepositoryInterface $orderAddressRepository
      * @param \Magento\Quote\Api\CartRepositoryInterface $quoteRepository
+     * @param \Magento\Sales\Api\ShipmentRepositoryInterface $shipmentRepository
      * @param StoreRepository $storeRepository
      * @param \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository
      * @param \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder
@@ -69,6 +74,7 @@ class Index extends \Magento\Backend\App\Action implements \Magento\Framework\Ap
         \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
         \Magento\Sales\Api\OrderAddressRepositoryInterface $orderAddressRepository,
         \Magento\Quote\Api\CartRepositoryInterface $quoteRepository,
+        \Magento\Sales\Api\ShipmentRepositoryInterface $shipmentRepository,
         \Magento\Store\Model\StoreRepository $storeRepository,
         \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository,
         \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder
@@ -82,6 +88,7 @@ class Index extends \Magento\Backend\App\Action implements \Magento\Framework\Ap
         $this->quoteRepository = $quoteRepository;
         $this->customerRepository = $customerRepository;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
+        $this->shipmentRepository = $shipmentRepository;
 
         parent::__construct($context);
     }
@@ -92,6 +99,7 @@ class Index extends \Magento\Backend\App\Action implements \Magento\Framework\Ap
      * @throws \Magento\Framework\Exception\LocalizedException
      * @return \Magento\Framework\Controller\Result\Json
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     public function execute()
     {
@@ -137,7 +145,7 @@ class Index extends \Magento\Backend\App\Action implements \Magento\Framework\Ap
 
                 if ($order) {
                     $quote = $this->quoteRepository->get($order->getQuoteId());
-                    $object['order'] = $order;
+                    $object['order  '] = $order;
                     $object['order.cart'] = $quote;
                     $object['order.cart.products'] = $this->helper->getQuoteProducts($quote);
                     $object['order.cart.product_categories'] = $this->helper->getProductCategories($quote);
@@ -152,6 +160,35 @@ class Index extends \Magento\Backend\App\Action implements \Magento\Framework\Ap
                     }
                 } else {
                     $error = "Order #$id not found";
+                }
+
+                break;
+            case 'shipment':
+                $shipment = null;
+                try {
+                    $shipment = $this->shipmentRepository->get($id);
+                } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
+                    $searchCriteria = $this->searchCriteriaBuilder->addFilter('increment_id', $id, 'eq')->create();
+                    $list = $this->orderRepository->getList($searchCriteria)->getItems();
+                    if (count($list) >0) {
+                        $shipment = $list[0];
+                    }
+                }
+
+                if ($shipment) {
+                    $object['order'] = $shipment->getOrder();
+                    $object['shipment'] = $shipment;
+                    $object['shipment.products'] =  $this->helper->getShippingProducts($shipment);
+                    $object['shipment.product_categories'] = $this->helper->getShippingProductCategories($shipment);
+                    $object['order.store'] = $this->storeRepository->getById($shipment->getStoreId());
+                    $object['address'] = $this->orderAddressRepository->get(
+                        $shipment->getShippingAddressId() ? $shipment->getShippingAddressId() : $shipment->getBillingAddressId()
+                    );
+                    if ($shipment->getCustomerId()) {
+                        $object['customer'] = $this->customerRepository->getById($shipment->getCustomerId());
+                    }
+                } else {
+                    $error = "Shipment #$id not found";
                 }
 
                 break;

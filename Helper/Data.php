@@ -65,9 +65,14 @@ class Data extends AbstractHelper
             foreach ($methods as $method) {
                 /** @var \ReflectionMethod $method */
                 $name = $method->getName();
-                if (strpos($name, 'get') === 0 && $method->getNumberOfParameters() == 0) {
+                if (strpos($name, 'get') === 0 && $method->getNumberOfParameters() == 0)  {
                     $key = strtolower(substr(preg_replace('/([A-Z])/', '_$1', $name), 4));
                     $label = substr(preg_replace('/([A-Z])/', ' $1', $name), 4);
+                    foreach (['sql', 'select', 'iterator', 'resource', 'connection', 'file'] as $substring) {
+                        if (strpos($key, $substring) !== false) {
+                            continue 2;
+                        }
+                    }
                     if ($prefix != "") {
                         $key = $prefix . '.' . $key;
                         $label = ucwords(str_replace('.', ' ', $prefix)) . ' ' . $label;
@@ -139,7 +144,7 @@ class Data extends AbstractHelper
         $result = [];
 
         if (is_object($subject) && $fields != null) {
-            if (in_array($subject, $stack)) {
+            if (in_array($subject, $stack) || count($stack) > 100) {
                 return 'cyclic reference';
             }
             $stack[] = $subject;
@@ -294,6 +299,53 @@ class Data extends AbstractHelper
         }
 
         return $products;
+    }
+
+    /**
+     * @param \Magento\Sales\Model\Order\Shipment $shipment
+     * @return array
+     */
+    public function getShippingProducts(\Magento\Sales\Model\Order\Shipment $shipment)
+    {
+        $products = [];
+        /** @var \Magento\Sales\Model\Order\Shipment\Item $item */
+        foreach ($shipment->getAllItems() as $item) {
+            $product = $item->getOrderItem()->getProduct();
+
+            $products[] = [
+                'name'     => $product->getName(),
+                'url'      => $product->getProductUrl(),
+                'quantity' => $item->getQty(),
+                'price'    => $item->getPrice(),
+                'image'    => $shipment->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA)
+                    . 'catalog/product' . $product->getImage()
+            ];
+        }
+
+        return $products;
+    }
+
+    /**
+     * @param \Magento\Sales\Model\Order\Shipment $shipment
+     * @return array
+     */
+    public function getShippingProductCategories(\Magento\Sales\Model\Order\Shipment $shipment)
+    {
+        $categories = [];
+        /** @var \Magento\Sales\Model\Order\Shipment\Item $item */
+        foreach ($shipment->getAllItems() as $item) {
+            $productCategories = $item->getOrderItem()->getProduct()->getCategoryCollection()->addAttributeToSelect('name');
+
+            foreach ($productCategories->getItems() as $categoryModel) {
+                $category = $categoryModel->getName();
+
+                if ($category != null && !in_array($category, $categories)) {
+                    $categories[] = $category;
+                }
+            }
+        }
+
+        return $categories;
     }
 
     /**
