@@ -229,12 +229,6 @@ class Subscriber
      */
     public function completeShipping($customer, $order, $shipment)
     {
-        try {
-            $this->subscriberApi->deleteTag($customer->getEmail(), self::CHECKOUT_COMPLETE_TAG);
-        } catch (\Exception $e) {
-            $this->logger->error($e);
-        }
-
         $subscriber = [
             'email'               => $customer->getEmail(),
             'tags'                => [self::SHIPPING_COMPLETE_TAG],

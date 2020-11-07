@@ -177,7 +177,8 @@ class AccountManagement
             }
 
             // Check if we should send the customer to rule
-            if ($sendToRule) {
+            if ($sendToRule &&
+                !($this->request->getModuleName() == 'checkout' && $this->request->getActionName() == 'success')) {
                 // Create a temporary customer account
                 $customer = $this->customerFactory->create();
 
