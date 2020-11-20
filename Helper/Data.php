@@ -124,7 +124,9 @@ class Data extends AbstractHelper
                     $item = &$item[$step];
                 }
                 $item[$last] = $value;
-                unset($subject[$key]);
+                if ($key != $last) {
+                    unset($subject[$key]);
+                }
             }
         }
         return $subject;
@@ -267,6 +269,7 @@ class Data extends AbstractHelper
                         $output[$key][substr($item, strlen($path)+1)] = $value;
                     }
                 }
+
                 if (array_key_exists($key, $output) && is_array($output[$key])) {
                     $this->collapseArray($output[$key]);
                 }
