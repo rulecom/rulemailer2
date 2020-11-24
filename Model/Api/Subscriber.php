@@ -67,6 +67,23 @@ class Subscriber
     }
 
     /**
+     * @param mixed $value
+     * @return bool
+     */
+    public function isMultiple($value)
+    {
+        return 0 == count(
+            array_filter(
+                $value,
+                function ($v, $k) {
+                    return !is_int($k) || is_array($v) || is_object($v);
+                },
+                ARRAY_FILTER_USE_BOTH
+            )
+        );
+    }
+
+    /**
      * @param $data
      * @return array
      */
@@ -86,7 +103,10 @@ class Subscriber
             if (is_array($value) || is_object($value)) {
                 $item['value'] = json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
                 $item['type'] = 'json';
-            }
+                if (is_array($value) && $this->isMultiple($value)) {
+                    $item['type'] = 'multiple';
+                }
+            };
 
             $result[] = $item;
         }
