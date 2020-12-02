@@ -101,10 +101,12 @@ class Subscriber
 
             $item = ['key' => $key, 'value' => $value];
             if (is_array($value) || is_object($value)) {
-                $item['value'] = json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-                $item['type'] = 'json';
                 if (is_array($value) && $this->isMultiple($value)) {
+                    $item['value'] = $value;
                     $item['type'] = 'multiple';
+                } else {
+                    $item['value'] = json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+                    $item['type'] = 'json';
                 }
             };
 
