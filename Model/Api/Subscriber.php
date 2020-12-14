@@ -11,22 +11,22 @@ use Rule\RuleMailer\Model\FieldsBuilder;
 class Subscriber
 {
     /**
-     * @var
+     * @var Tag name for 'Newsletter'
      */
     const NEWSLETTER_TAG = 'Newsletter';
 
     /**
-     * @var
+     * @var Tag name for 'CartInProgress'
      */
     const CART_IN_PROGRESS_TAG = 'CartInProgress';
 
     /**
-     * @var
+     * @var Tag name for 'OrderCompleted'
      */
     const CHECKOUT_COMPLETE_TAG = 'OrderCompleted';
 
     /**
-     * @var
+     * @var Tag name for 'OrderShipped'
      */
     const SHIPPING_COMPLETE_TAG = 'OrderShipped';
 

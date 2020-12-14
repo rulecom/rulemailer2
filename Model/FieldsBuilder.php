@@ -7,22 +7,22 @@ use \Magento\Store\Model\StoreManagerInterface;
 class FieldsBuilder
 {
     /**
-     * @var
+     * @var Data prefix for SUBSCRIBER_GROUP
      */
     const SUBSCRIBER_GROUP = "User";
 
     /**
-     * @var
+     * @var Data prefix for CART_GROUP
      */
     const CART_GROUP = "Cart";
 
     /**
-     * @var
+     * @var Data prefix for ORDER_GROUP
      */
     const ORDER_GROUP = "Order";
 
     /**
-     * @var
+     * @var Data prefix for ADDRESS_GROUP
      */
     const ADDRESS_GROUP = "Address";
 

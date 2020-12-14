@@ -8,7 +8,7 @@
                    id="<?= $block->escapeHtml($element->getId()) ?>_search" />
             <select id="<?= $block->escapeHtml($element->getId()) ?>_add_options" multiple="multiple">
                 <option value="">Custom</option>
-                <?php foreach ($sources as $key => $val): ?>
+                <?php foreach ($sources as $key => $val) : ?>
                 <option value="<?= $block->escapeHtml($key) ?>"><?= $block->escapeHtml($val) ?></option>
                 <?php endforeach; ?>
             </select>
@@ -65,9 +65,9 @@
 
 <script>
     require(["jquery"], function($) {
-        let sources = <?= /*@codingStandardsIgnoreStart*/ json_encode($sources) /*@codingStandardsIgnoreEnd*/?>;
-        let reset = <?= /*@codingStandardsIgnoreStart*/ empty($value) ? "{}" : $value /*@codingStandardsIgnoreEnd*/?>;
-        let defaults = <?= /*@codingStandardsIgnoreStart*/ empty($defaults) ? "{}" : $defaults /*@codingStandardsIgnoreEnd*/?>;
+        let sources = <?= /* @noEscape */ json_encode($sources) /* @noEscape */?>;
+        let reset = <?= /* @noEscape */ empty($value) ? "{}" : $value /* @noEscape */?>;
+        let defaults = <?= /* @noEscape */ empty($defaults) ? "{}" : $defaults /* @noEscape */?>;
 
         let values = reset;
 
