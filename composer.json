@@ -2,7 +2,7 @@
     "name": "rulecom/rulemailer2",
     "description": "Magento2 module for integration with RuleMailer",
     "type": "magento2-module",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "authors": [
         {
             "name": "Stanislav Kalashnik",
