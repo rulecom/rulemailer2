@@ -1,0 +1,215 @@
+<table id="<?= $block->escapeHtml($element->getId()) ?>_mapping"></table>
+
+<table id="<?= $block->escapeHtml($element->getId()) ?>_add">
+    <tr>
+        <td width="100%">
+            <input type="text"
+                   placeholder="Search..."
+                   id="<?= $block->escapeHtml($element->getId()) ?>_search" />
+            <select id="<?= $block->escapeHtml($element->getId()) ?>_add_options" multiple="multiple">
+                <option value="">Custom</option>
+                <?php foreach ($sources as $key => $val) : ?>
+                <option value="<?= $block->escapeHtml($key) ?>"><?= $block->escapeHtml($val) ?></option>
+                <?php endforeach; ?>
+            </select>
+        </td>
+        <td><div id="<?= $block->escapeHtml($element->getId()) ?>_add_button"
+                 class="action-default"
+                 style="cursor: pointer">&#10010;</div></td>
+    </tr>
+</table>
+
+<br/>
+<div id="<?= $block->escapeHtml($element->getId()) ?>_reset"
+     class="action-default"
+     style="cursor: pointer">Reset</div>
+<div id="<?= $block->escapeHtml($element->getId()) ?>_defaults"
+     class="action-default"
+     style="cursor: pointer">Reset to defaults</div>
+
+<hr/>
+
+<table id="<?= $block->escapeHtml($element->getId()) ?>_preview"
+       align="center"
+       style="width: 90%; min-width: 550px">
+    <tr>
+        <td style="width: 40%">
+            <input type="text"
+                   id="<?= $block->escapeHtml($element->getId()) ?>_preview_id"
+                   size="5"
+                   placeholder="#"
+                   style="text-align: center"/>
+        </td>
+        <td style="width: 30%">
+            <select id="<?= $block->escapeHtml($element->getId()) ?>_preview_subject">
+                <option value="order">Order</option>
+                <option value="customer">Customer</option>
+                <option value="quote">Quote</option>
+                <option value="shipment">Shipment</option>
+
+            </select>
+        </td>
+        <td style="text-wrap: none; width: 30%"">
+            <div id="<?= $block->escapeHtml($element->getId()) ?>_button_preview"
+                 class="action-default" style="cursor: pointer">Preview</div>
+            <div id="<?= $block->escapeHtml($element->getId()) ?>_button_test"
+                 class="action-default" style="cursor: pointer">Test</div>
+        </td>
+    </tr>
+</table>
+
+<input type="hidden"
+       id="<?= $block->escapeHtml($element->getId()) ?>_value"
+       name="<?= $block->escapeHtml($element->getName()) ?>"
+       value="<?= $block->escapeHtml($value) ?>" />
+
+<script>
+    require(["jquery"], function($) {
+        let sources = <?= /* @noEscape */ json_encode($sources) /* @noEscape */?>;
+        let reset = <?= /* @noEscape */ empty($value) ? "{}" : $value /* @noEscape */?>;
+        let defaults = <?= /* @noEscape */ empty($defaults) ? "{}" : $defaults /* @noEscape */?>;
+
+        let values = reset;
+
+        let id = '<?= $block->escapeHtml($element->getId()) ?>';
+        let url = "<?= $block->escapeHtml(
+            $block->getUrl('rule_rulemailer/preview', ['_current' => true, '_use_rewrite' => true])
+        ) ?>";
+
+        let table = $('#' + id + '_mapping');
+        let result = $('#' + id + '_value');
+
+        let refreshDisabled = () => {
+            $('#' + id + '_add_options option').each( (_, option) => {
+                let key = option.value.replace(/(^\w|[._]\w)/g, m => m.replace('_', '').toUpperCase());
+
+                let parts = key.split('.');
+                key = parts[0] + '.' + parts.slice(1).join('_');
+
+                if (key in values) {
+                    $(option).attr('disabled', 'disabled');
+                } else {
+                    $(option).removeAttr('disabled');
+                }
+                $(option).attr('data-key', key);
+            })
+        };
+        refreshDisabled();
+
+        $('#' + id + '_reset').click(() => {
+            values = reset;
+            refreshTable();
+            refreshDisabled();
+        });
+
+        $('#' + id + '_defaults').click(() => {
+            values = defaults;
+            refreshTable();
+            refreshDisabled();
+        });
+
+        $('#' + id + '_add_button').click(() => {
+            $('#' + id + '_add_options').find(':selected').each( (_, option) => {
+                option = $(option);
+                values[option.attr('data-key')] = option.val();
+                option.attr('disabled', 'disabled');
+                option.removeAttr('selected');
+            });
+            refreshTable();
+            refreshDisabled();
+        });
+
+        $('#' + id + '_search').keyup( (e) => {
+            let val = $(e.target).val().toLowerCase();
+
+            $('#' + id + '_add_options option').each( (_, option) => {
+                if ($(option).text().toLowerCase().indexOf(val) === -1) {
+                    $(option).hide();
+                } else {
+                    $(option).show();
+                }
+            });
+        });
+
+        $('#' + id + '_add_options').keypress( (e) => {
+            $('#' + id + '_search').val(String.fromCharCode(e.which)).show().focus();
+        });
+
+
+        let refreshTable = () => {
+            result.val(JSON.stringify(values));
+            table.html('');
+
+            if (Object.keys(values).length > 0) {
+                let tr = $('<tr>');
+                tr.append($('<th>').append('<span>Meta Attribute</span>'));
+                tr.append($('<th>').append('<span>Source</span>'));
+                tr.append($('<th>'));
+                table.append(tr);
+            }
+
+            $.each(values, (key, value) => {
+                let tr = $('<tr>');
+                let meta = $('<input type="text">');
+                let source = $('<input type="text">');
+
+                meta.blur(()=>{
+                    let parts = meta.val().split('.');
+                    meta.val(parts[0] + '.' + parts.slice(1).join('_'));
+                    if (meta.val() !== key) {
+                        values[meta.val()] = source.val();
+                        delete values[key];
+                        refreshTable();
+                        refreshDisabled();
+                    }
+                });
+
+                source.attr('title', value in sources ? sources[value] : value);
+                source.blur(()=>{
+                    values[key] = source.val();
+                    refreshTable();
+                });
+
+                tr.append($('<td>').append(meta.val(key)));
+                tr.append($('<td>').append(source.val(value)));
+                tr.append($('<td>').append(
+                    $('<span class="action-default" style="cursor: pointer">&#10006;</span>').click(
+                        () => {
+                            delete values[key];
+                            refreshTable();
+                            refreshDisabled();
+                        })));
+                table.append(tr);
+            });
+        };
+        refreshTable();
+
+        let validate = (test) => {
+            let previewId = $('#' + id + '_preview_id');
+            if (previewId.val() === '') {
+                alert('Subject # is required');
+                return;
+            }
+
+            let form = $('<form id="request">');
+            form.attr('action', url);
+
+            form.append($('<input type="hidden" name="id">').val(previewId.val()));
+
+            form.append($('<input type="hidden" name="subject">').val(
+                $('#' + id + '_preview_subject').val()
+            ));
+
+            if (test) {
+                form.append($('<input type="hidden" name="fields">').val(result.val()));
+            }
+
+            let wnd = window.open("");
+            wnd.document.body.innerHTML = form.prop('outerHTML');
+            wnd.document.getElementById('request').submit();
+        };
+
+        $('#' + id + '_button_preview').click(() => { validate(false) });
+        $('#' + id + '_button_test').click(() => { validate(true) });
+    });
+</script>

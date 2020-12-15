@@ -6,12 +6,13 @@ use Magento\Framework\Event\Observer;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Customer\Model\Session;
 use Rule\RuleMailer\Model\Api\Subscriber;
+use Magento\Customer\Model\CustomerFactory;
 
 /**
- * Class CartObserver listener for 'checkout_cart_save_after' event
+ * Class CheckoutObserver listener for 'checkout_submit_all_after' event
  * @SuppressWarnings(PHPMD.CookieAndSessionMisuse)
  */
-class CartObserver implements ObserverInterface
+class ShipObserver implements ObserverInterface
 {
     /**
      * @var Subscriber
@@ -24,9 +25,9 @@ class CartObserver implements ObserverInterface
     private $config;
 
     /**
-     * @var LoggerInterface
+     * @var CustomerFactory
      */
-    private $logger;
+    private $customerFactory;
 
     /**
      * @var Session
@@ -34,22 +35,30 @@ class CartObserver implements ObserverInterface
     private $customerSession;
 
     /**
-     * CartObserver constructor.
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
+     * CheckoutObserver constructor.
      * @param ScopeConfigInterface $scopeConfig
      * @param Session $customerSession
+     * @param CustomerFactory $customerFactory
      * @param LoggerInterface $logger
      * @param Subscriber $subscriber
      */
     public function __construct(
         ScopeConfigInterface $scopeConfig,
         Session $customerSession,
+        CustomerFactory $customerFactory,
         LoggerInterface $logger,
         Subscriber $subscriber
     ) {
         $this->subscriber = $subscriber;
-        $this->config = $scopeConfig;
-        $this->customerSession = $customerSession;
         $this->logger = $logger;
+        $this->config = $scopeConfig;
+        $this->customerFactory = $customerFactory;
+        $this->customerSession = $customerSession;
     }
 
     /**
@@ -58,14 +67,19 @@ class CartObserver implements ObserverInterface
     public function execute(Observer $observer)
     {
         $event = $observer->getEvent();
-        $cart = $event->getCart();
+        /** @var \Magento\Sales\Model\Order\Shipment $shipment */
+        $shipment = $event->getShipment();
+        $order = $shipment->getOrder();
+        try {
+            $customer = $this->customerFactory->create();
 
-        if ($this->customerSession->isLoggedIn()) {
-            try {
-                $this->subscriber->updateCustomerCart($this->customerSession->getCustomer(), $cart);
-            } catch (\Exception $e) {
-                $this->logger->info("Failed to update cart:" . $e->getMessage());
-            }
+            $customer->setEmail($order->getCustomerEmail());
+            $customer->setFirstname($order->getBillingAddress()->getFirstname());
+            $customer->setLastname($order->getBillingAddress()->getLastname());
+
+            $this->subscriber->completeShipping($customer, $order, $shipment);
+        } catch (\Exception $e) {
+            $this->logger->info("Filed to complete shipping: " . $e->getMessage());
         }
     }
 }

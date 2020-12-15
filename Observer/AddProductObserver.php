@@ -2,34 +2,55 @@
 
 use Psr\Log\LoggerInterface;
 use Magento\Framework\Event\ObserverInterface;
-use Magento\Framework\DataObject;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Store\Model\ScopeInterface;
 use Magento\Customer\Model\Session;
 use Rule\RuleMailer\Model\Api\Subscriber;
 
+/**
+ * Class AddProductObserver temporary unused
+ * @SuppressWarnings(PHPMD.CookieAndSessionMisuse)
+ */
 class AddProductObserver implements ObserverInterface
 {
+    /**
+     * @var
+     */
     private $subscriberApi;
 
+    /**
+     * @var ScopeConfigInterface
+     */
     private $config;
 
+    /**
+     * @var LoggerInterface
+     */
     private $logger;
 
+    /**
+     * AddProductObserver constructor.
+     * @param ScopeConfigInterface $scopeConfig
+     * @param Session $customerSession
+     * @param LoggerInterface $logger
+     * @param Subscriber $subscriber
+     */
     public function __construct(
         ScopeConfigInterface $scopeConfig,
         Session $customerSession,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        Subscriber $subscriber
     ) {
         $this->config = $scopeConfig;
         $this->customerSession = $customerSession;
         $this->logger = $logger;
 
-        $apiKey = $this->config->getValue('rule_rulemailer/general/api_key', ScopeInterface::SCOPE_STORE);
-        $this->subscriberApi = new Subscriber($apiKey);
+        $this->subscriberApi = $subscriber->getApi();
     }
 
+    /**
+     * @param Observer $observer
+     */
     public function execute(Observer $observer)
     {
         try {

@@ -1,11 +1,11 @@
 <?php
-
 namespace Rule\RuleMailer\Controller\Subscriber;
 
 use Magento\Customer\Api\AccountManagementInterface as CustomerAccountManagement;
 use Magento\Customer\Model\Session;
 use Magento\Customer\Model\Url as CustomerUrl;
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Newsletter\Model\SubscriberFactory;
 use Magento\Framework\Data\Form\FormKey\Validator;
@@ -14,7 +14,7 @@ use Psr\Log\LoggerInterface;
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
-class NewAction extends \Magento\Newsletter\Controller\Subscriber
+class NewAction extends \Magento\Newsletter\Controller\Subscriber implements HttpGetActionInterface
 {
     /**
      * @var CustomerAccountManagement
@@ -48,12 +48,13 @@ class NewAction extends \Magento\Newsletter\Controller\Subscriber
         StoreManagerInterface $storeManager,
         CustomerUrl $customerUrl,
         CustomerAccountManagement $customerAccountManagement,
-		Validator $formKeyValidator,
-		LoggerInterface $logger
+        Validator $formKeyValidator,
+        LoggerInterface $logger
     ) {
         $this->customerAccountManagement = $customerAccountManagement;
-		$this->formKeyValidator = $formKeyValidator;
-		$this->logger = $logger;
+        $this->formKeyValidator = $formKeyValidator;
+        $this->logger = $logger;
+        
         parent::__construct(
             $context,
             $subscriberFactory,
@@ -71,12 +72,12 @@ class NewAction extends \Magento\Newsletter\Controller\Subscriber
      */
     public function execute()
     {
-		if (!$this->formKeyValidator->validate($this->getRequest())) {
-    		// invalid form key
-			$this->logger->info("Form_Key:Invalid Form Key");
+        if (!$this->formKeyValidator->validate($this->getRequest())) {
+            // invalid form key
+            $this->logger->info("Form_Key:Invalid Form Key");
         }
         
-		if ($this->getRequest()->isPost() && $this->getRequest()->getPost('email')) {
+        if ($this->getRequest()->isPost() && $this->getRequest()->getPost('email')) {
             $email = (string)$this->getRequest()->getPost('email');
 
             try {
@@ -169,6 +170,7 @@ class NewAction extends \Magento\Newsletter\Controller\Subscriber
      *
      * @param string $email
      * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Zend_Validate_Exception
      * @return void
      */
     private function validateEmailFormat($email)

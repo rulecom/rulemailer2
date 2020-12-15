@@ -2,40 +2,68 @@
 
 use Psr\Log\LoggerInterface;
 use Magento\Framework\Event\ObserverInterface;
-use Magento\Framework\DataObject;
 use Magento\Framework\Event\Observer;
-use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Store\Model\ScopeInterface;
 use Magento\Customer\Model\Session;
 use Rule\RuleMailer\Model\Api\Subscriber;
 use Magento\Customer\Model\CustomerFactory;
 
+/**
+ * Class CheckoutObserver listener for 'checkout_submit_all_after' event
+ * @SuppressWarnings(PHPMD.CookieAndSessionMisuse)
+ */
 class CheckoutObserver implements ObserverInterface
 {
-    private $subscriberApi;
+    /**
+     * @var Subscriber
+     */
+    private $subscriber;
 
+    /**
+     * @var ScopeConfigInterface
+     */
     private $config;
 
+    /**
+     * @var CustomerFactory
+     */
     private $customerFactory;
 
+    /**
+     * @var Session
+     */
+    private $customerSession;
+
+    /**
+     * @var LoggerInterface
+     */
     private $logger;
 
+    /**
+     * CheckoutObserver constructor.
+     * @param ScopeConfigInterface $scopeConfig
+     * @param Session $customerSession
+     * @param CustomerFactory $customerFactory
+     * @param LoggerInterface $logger
+     * @param Subscriber $subscriber
+     */
     public function __construct(
         ScopeConfigInterface $scopeConfig,
         Session $customerSession,
         CustomerFactory $customerFactory,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        Subscriber $subscriber
     ) {
+        $this->subscriber = $subscriber;
         $this->logger = $logger;
         $this->config = $scopeConfig;
         $this->customerFactory = $customerFactory;
         $this->customerSession = $customerSession;
-
-        $apiKey = $this->config->getValue('rule_rulemailer/general/api_key', ScopeInterface::SCOPE_STORE);
-        $this->subscriberApi = new Subscriber($apiKey);
     }
 
+    /**
+     * @param Observer $observer
+     */
     public function execute(Observer $observer)
     {
         $event = $observer->getEvent();
@@ -51,7 +79,7 @@ class CheckoutObserver implements ObserverInterface
                 $customer->setLastname($event->getOrder()->getBillingAddress()->getLastname());
             }
 
-            $this->subscriberApi->completeOrder($customer, $event->getOrder(), $event->getQuote());
+            $this->subscriber->completeOrder($customer, $event->getOrder(), $event->getQuote());
         } catch (\Exception $e) {
             $this->logger->info("Filed to complete order: " . $e->getMessage());
         }

@@ -1,5 +1,4 @@
 <?php
-
 namespace Rule\RuleMailer\Plugin\Magento\Customer\Model;
 
 use Magento\Checkout\Model\Cart;
@@ -14,11 +13,11 @@ use Psr\Log\LoggerInterface as Logger;
 use Magento\Framework\Data\Form\FormKey\Validator;
 
 /**
- * Class AccountManagement
+ * Class AccountManagement implements plugin over \Magento\Customer\Model\AccountManagement class
  *
- * @package  Rule\RuleMailer\Plugin\Magento\Customer\Model
  * @author   Robert Lord, Codepeak AB <robert@codepeak.se>
  * @link     https://codepeak.se
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class AccountManagement
 {
@@ -69,17 +68,27 @@ class AccountManagement
 
     /**
      * AccountManagement constructor.
+     * @param ScopeConfigInterface $scopeConfig
+     * @param Cart $cart
+     * @param CustomerFactory $customerFactory
+     * @param Request $request
+     * @param ManagerInterface $messageManager
+     * @param RedirectFactory $redirectFactory
+     * @param Logger $logger
+     * @param Validator $formKeyValidator
+     * @param Subscriber $subscriberApi
      */
     public function __construct(
-        ScopeConfigInterface $scopeConfig, 
-        Cart $cart, 
-        CustomerFactory $customerFactory, 
+        ScopeConfigInterface $scopeConfig,
+        Cart $cart,
+        CustomerFactory $customerFactory,
         Request $request,
         ManagerInterface $messageManager,
         RedirectFactory $redirectFactory,
         Logger $logger,
-        Validator $formKeyValidator
-        ) {
+        Validator $formKeyValidator,
+        Subscriber $subscriberApi
+    ) {
         $this->scopeConfig = $scopeConfig;
         $this->cart = $cart;
         $this->customerFactory = $customerFactory;
@@ -88,6 +97,7 @@ class AccountManagement
         $this->redirectFactory = $redirectFactory;
         $this->logger = $logger;
         $this->formKeyValidator = $formKeyValidator;
+        $this->subscriberApi = $subscriberApi;
     }
 
     /**
@@ -97,6 +107,7 @@ class AccountManagement
      * @param null $password
      * @param string $redirectUrl
      * @return mixed
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function aroundCreateAccount(
         \Magento\Customer\Model\AccountManagement $subject,
@@ -106,16 +117,15 @@ class AccountManagement
         $redirectUrl = ''
     ) {
         // validate form key
-        if (!$this->formKeyValidator->validate($this->getRequest())) {
-    		// invalid form key
-			$this->logger->info("Form_Key:Invalid Form Key");
+        if (!$this->formKeyValidator->validate($this->request)) {
+            $this->logger->info("Form_Key:Invalid Form Key");
         }
         $this->logger->info("Form_Key:Valid Form Key");
 
         // Block if honeypot field is filled out
         if ($this->request->getPost('hpt-url')) {
-            $line = "-- Spam Attempt --\n"
-                    . "POST DATA: ".print_r($postData, true)."\n";
+            $postData = $this->request->getPost();
+            $line = "-- Spam Attempt --\nPOST DATA: " . json_encode($postData) . "\n";
             $this->logger->info($line);
             $this->messageManager->addError('Invalid form data. Please try again.');
             return $this->redirectFactory->create()->setPath('customer/account/create');
@@ -133,8 +143,8 @@ class AccountManagement
      * @param \Closure                                  $proceed
      * @param                                           $customerEmail
      * @param                                           $websiteId
-     *
      * @return mixed
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function aroundIsEmailAvailable(
         \Magento\Customer\Model\AccountManagement $subject,
@@ -147,17 +157,11 @@ class AccountManagement
 
         // Let's make it safe to avoid any errors
         try {
-            // Fetch the API key
-            $apiKey = $this->scopeConfig->getValue('rule_rulemailer/general/api_key', ScopeInterface::SCOPE_STORE);
-
             // Fetch setting for aggressive abandoned cart
             $aggressive = $this->scopeConfig->getValue(
                 'rule_rulemailer/general/aggressive_abandoned_cart',
                 ScopeInterface::SCOPE_STORE
             );
-
-            // Fetch the subscriber API
-            $this->subscriberApi = new Subscriber($apiKey);
 
             // Default is that we don't send to Rule
             $sendToRule = false;
@@ -173,7 +177,8 @@ class AccountManagement
             }
 
             // Check if we should send the customer to rule
-            if ($sendToRule) {
+            if ($sendToRule &&
+                !($this->request->getModuleName() == 'checkout' && $this->request->getActionName() == 'success')) {
                 // Create a temporary customer account
                 $customer = $this->customerFactory->create();
 
@@ -184,7 +189,7 @@ class AccountManagement
                 $this->subscriberApi->updateCustomerCart($customer, $this->cart);
             }
         } catch (\Exception $e) {
-            // Do nothing, silently continue with normal operations
+            null;
         }
 
         // Return the original result

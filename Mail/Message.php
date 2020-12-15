@@ -2,11 +2,28 @@
 
 use Magento\Framework\Mail\Message as MagentoMessage;
 
+/**
+ * Class Message preference for \Magento\Framework\Mail\Message class
+ */
 class Message extends MagentoMessage
 {
+    /**
+     * @var
+     * @codingStandardsIgnoreStart
+     */
     private $_fromAssoc;
+
+    /**
+     * @var array
+     * @codingStandardsIgnoreStart
+     */
     private $_recipientsAssoc = [];
 
+    /**
+     * @param $email
+     * @param null $name
+     * @return MagentoMessage|void
+     */
     public function setFrom($email, $name = null)
     {
         $this->_fromAssoc = ['name' => $this->_filterName($name), 'email' => $this->_filterEmail($email)];
@@ -14,11 +31,20 @@ class Message extends MagentoMessage
         parent::setFrom($email, $name);
     }
 
+    /**
+     * @return mixed
+     */
     public function getFromAssoc()
     {
         return $this->_fromAssoc;
     }
 
+    /**
+     * @param $headerName
+     * @param $email
+     * @param $name
+     * @codingStandardsIgnoreStart
+     */
     protected function _addRecipientAndHeader($headerName, $email, $name)
     {
         $this->_recipientsAssoc[] = [
@@ -29,16 +55,16 @@ class Message extends MagentoMessage
         parent::_addRecipientAndHeader($headerName, $email, $name);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getRecipientsAssoc()
     {
         return $this->_recipientsAssoc;
     }
 
     /**
-     * Return Zend_Mime_Part representing body HTML
-     *
-     * @param  bool $htmlOnly Whether to return the body HTML only, or the MIME part; defaults to false, the MIME part
-     * @return false|Zend_Mime_Part|string
+     * {@inheritdoc}
      */
     public function getBodyHtml($htmlOnly = false)
     {
@@ -51,10 +77,7 @@ class Message extends MagentoMessage
     }
 
     /**
-     * Return text body Zend_Mime_Part or string
-     *
-     * @param  bool textOnly Whether to return just the body text content or the MIME part; defaults to false, the MIME part
-     * @return false|Zend_Mime_Part|string
+     * {@inheritdoc}
      */
     public function getBodyText($textOnly = false)
     {

@@ -7,22 +7,22 @@ use \Magento\Store\Model\StoreManagerInterface;
 class FieldsBuilder
 {
     /**
-     * @var
+     * @var Data prefix for SUBSCRIBER_GROUP
      */
     const SUBSCRIBER_GROUP = "User";
 
     /**
-     * @var
+     * @var Data prefix for CART_GROUP
      */
     const CART_GROUP = "Cart";
 
     /**
-     * @var
+     * @var Data prefix for ORDER_GROUP
      */
     const ORDER_GROUP = "Order";
 
     /**
-     * @var
+     * @var Data prefix for ADDRESS_GROUP
      */
     const ADDRESS_GROUP = "Address";
 
@@ -41,6 +41,10 @@ class FieldsBuilder
         $this->storeManagerInterface = $storeManagerInterface;
     }
 
+    /**
+     * @param $quote
+     * @return array
+     */
     public function buildCartFields($quote)
     {
         $fields = [
@@ -52,6 +56,11 @@ class FieldsBuilder
         return $fields;
     }
 
+    /**
+     * @param $order
+     * @param $quote
+     * @return array
+     */
     public function buildOrderFields($order, $quote)
     {
         if ($order->getShippingAddress()) {
@@ -84,6 +93,10 @@ class FieldsBuilder
         return $fields;
     }
 
+    /**
+     * @param $customer
+     * @return array
+     */
     public function buildCustomerFields($customer)
     {
         $fields = [
@@ -109,6 +122,10 @@ class FieldsBuilder
         return $fields;
     }
 
+    /**
+     * @param $quote
+     * @return false|string
+     */
     protected function getProductsJson($quote)
     {
         $products = [];
@@ -129,6 +146,10 @@ class FieldsBuilder
         return json_encode($products, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
+    /**
+     * @param $quote
+     * @return array
+     */
     protected function getProductCategories($quote)
     {
         $categories = [];
@@ -139,7 +160,7 @@ class FieldsBuilder
             foreach ($productCategories->getItems() as $categoryModel) {
                 $category = $categoryModel->getName();
 
-                if (!is_null($category) && !in_array($category, $categories)) {
+                if ($category != null && !in_array($category, $categories)) {
                     $categories[] = $category;
                 }
             }

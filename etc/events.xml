@@ -9,4 +9,7 @@
     <event name="checkout_cart_save_after">
         <observer name="rule_rulemailer_cart_obs" instance="Rule\RuleMailer\Observer\CartObserver"/>
     </event>
+    <event name="sales_order_shipment_save_after">
+        <observer name="rule_rulemailer_ship_obs" instance="Rule\RuleMailer\Observer\ShipObserver"/>
+    </event>
 </config>
