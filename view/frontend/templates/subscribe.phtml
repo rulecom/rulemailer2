@@ -13,7 +13,7 @@
             method="post"
             data-mage-init='{"validation": {"errorClass": "mage-error"}}'
             id="newsletter-validate-detail">
-			<?php /* @noEscape */ echo $block->getBlockHtml('formkey'); ?>
+            <?= /* @noEscape */ $block->getBlockHtml('formkey'); ?>
             <div class="field newsletter">
                 <label class="label" for="newsletter"><span><?= $block->escapeHtml(__('Sign Up for Our Newsletter:')) ?></span></label>
                 <div class="control">

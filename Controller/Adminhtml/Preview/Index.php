@@ -182,7 +182,8 @@ class Index extends \Magento\Backend\App\Action implements \Magento\Framework\Ap
                     $object['shipment.product_categories'] = $this->helper->getShippingProductCategories($shipment);
                     $object['order.store'] = $this->storeRepository->getById($shipment->getStoreId());
                     $object['address'] = $this->orderAddressRepository->get(
-                        $shipment->getShippingAddressId() ? $shipment->getShippingAddressId() : $shipment->getBillingAddressId()
+                        $shipment->getShippingAddressId() ? $shipment->getShippingAddressId() :
+                        $shipment->getBillingAddressId()
                     );
                     if ($shipment->getCustomerId()) {
                         $object['customer'] = $this->customerRepository->getById($shipment->getCustomerId());

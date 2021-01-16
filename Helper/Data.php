@@ -65,7 +65,7 @@ class Data extends AbstractHelper
             foreach ($methods as $method) {
                 /** @var \ReflectionMethod $method */
                 $name = $method->getName();
-                if (strpos($name, 'get') === 0 && $method->getNumberOfParameters() == 0)  {
+                if (strpos($name, 'get') === 0 && $method->getNumberOfParameters() == 0) {
                     $key = strtolower(substr(preg_replace('/([A-Z])/', '_$1', $name), 4));
                     $label = substr(preg_replace('/([A-Z])/', ' $1', $name), 4);
                     foreach (['sql', 'select', 'iterator', 'resource', 'connection', 'file'] as $substring) {
@@ -337,7 +337,8 @@ class Data extends AbstractHelper
         $categories = [];
         /** @var \Magento\Sales\Model\Order\Shipment\Item $item */
         foreach ($shipment->getAllItems() as $item) {
-            $productCategories = $item->getOrderItem()->getProduct()->getCategoryCollection()->addAttributeToSelect('name');
+            $productCategories = $item->getOrderItem()->getProduct()->getCategoryCollection()
+                ->addAttributeToSelect('name');
 
             foreach ($productCategories->getItems() as $categoryModel) {
                 $category = $categoryModel->getName();

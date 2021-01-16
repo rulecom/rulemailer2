@@ -14,7 +14,7 @@ use Rule\RuleMailer\Model\Api\Subscriber;
 class SubscriptionObserver implements ObserverInterface
 {
     /**
-     * @var
+     * @var Prefix for NEWSLETTER group
      */
     const NEWSLETTER_GROUP = 'Newsletter';
 
