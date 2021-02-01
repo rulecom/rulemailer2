@@ -80,11 +80,14 @@ class CheckoutObserver implements ObserverInterface
             }
 
             $orders = $event->getOrders();
-            $order = $event->getOrders();
+            $order = $event->getOrder();
             $quote = $event->getQuote();
 
             if (empty($orders) && !is_array($orders)) {
-                $orders = [$order];
+                $orders = [];
+                if (!empty($order)) {
+                    $orders[] = $order;
+                }
             }
 
             foreach ($orders as $order) {
