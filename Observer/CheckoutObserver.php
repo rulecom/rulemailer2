@@ -79,7 +79,21 @@ class CheckoutObserver implements ObserverInterface
                 $customer->setLastname($event->getOrder()->getBillingAddress()->getLastname());
             }
 
-            $this->subscriber->completeOrder($customer, $event->getOrder(), $event->getQuote());
+            $orders = $event->getOrders();
+            $order = $event->getOrder();
+            $quote = $event->getQuote();
+
+            if (empty($orders) && !is_array($orders)) {
+                $orders = [];
+                if (!empty($order)) {
+                    $orders[] = $order;
+                }
+            }
+
+            foreach ($orders as $order) {
+                $this->subscriber->completeOrder($customer, $order, $quote);
+            }
+
         } catch (\Exception $e) {
             $this->logger->info("Filed to complete order: " . $e->getMessage());
         }
