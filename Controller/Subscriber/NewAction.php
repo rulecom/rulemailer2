@@ -5,7 +5,7 @@ use Magento\Customer\Api\AccountManagementInterface as CustomerAccountManagement
 use Magento\Customer\Model\Session;
 use Magento\Customer\Model\Url as CustomerUrl;
 use Magento\Framework\App\Action\Context;
-use Magento\Framework\App\Action\HttpGetActionInterface;
+use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Newsletter\Model\SubscriberFactory;
 use Magento\Framework\Data\Form\FormKey\Validator;
@@ -14,7 +14,7 @@ use Psr\Log\LoggerInterface;
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
-class NewAction extends \Magento\Newsletter\Controller\Subscriber implements HttpGetActionInterface
+class NewAction extends \Magento\Newsletter\Controller\Subscriber implements HttpPostActionInterface
 {
     /**
      * @var CustomerAccountManagement
