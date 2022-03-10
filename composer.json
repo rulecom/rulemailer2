@@ -2,7 +2,7 @@
     "name": "rulecom/rulemailer2",
     "description": "Magento2 module for integration with Rule",
     "type": "magento2-module",
-    "version": "1.2.2",
+    "version": "1.2.3",
     "authors": [
         {
             "name": "Rule Communications",
