@@ -1,0 +1,48 @@
+name: Integration tests
+
+on:
+  push:
+    branches:
+    - '*'
+    tags:
+    - '*'
+  pull_request:
+
+jobs:
+  test:
+    name: Run tests
+    runs-on: ubuntu-18.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          path: module
+
+      - name: Install dependencies
+        uses: shivammathur/setup-php@master
+        with:
+          php-version: '7.4'
+          extension: intl, mbstring, json, bcmath, sodium, zip
+          coverage: xdebug
+          tools: composer, phpcs, phpunit:7.5.19, phpcpd, phpmd
+
+      - name: Install tools
+        run: |
+          cd $GITHUB_WORKSPACE/module
+          composer global require squizlabs/php_codesniffer
+          composer global require phpcompatibility/php-compatibility
+          composer global require magento/magento-coding-standard
+          composer global require phpmd/phpmd
+          composer global require sebastian/phpcpd
+
+      - name: Run PHPCS inspection
+        run: |
+          cd $GITHUB_WORKSPACE/module
+          php ~/.composer/vendor/bin/phpcs --config-set installed_paths ~/.composer/vendor/phpcompatibility/php-compatibility/PHPCompatibility,~/.composer/vendor/magento/magento-coding-standard/Magento2
+          #php ~/.composer/vendor/bin/phpcs --runtime-set ignore_warnings_on_exit 1 --standard=PSR2 ./ --ignore=./.github
+          php ~/.composer/vendor/bin/phpcs --runtime-set ignore_warnings_on_exit 1 --standard=Magento2 --extensions=php,phtml ./ --ignore=./.github
+      - name: Run PHPMD inspection
+        run: |
+            cd $GITHUB_WORKSPACE/module
+            php ~/.composer/vendor/bin/phpmd ./ text cleancode,codesize,controversial,design,naming,unusedcode
