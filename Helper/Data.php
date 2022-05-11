@@ -1,5 +1,6 @@
 <?php namespace Rule\RuleMailer\Helper;
 
+use Magento\Quote\Model\Quote;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Store\Model\ScopeInterface;
@@ -353,10 +354,10 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param \Magento\Quote\Model\Quote $quote
+     * @param Quote $quote
      * @return array
      */
-    public function getProductCategories(\Magento\Quote\Model\Quote $quote)
+    public function getProductCategories(Quote $quote)
     {
         $categories = [];
 
@@ -373,5 +374,29 @@ class Data extends AbstractHelper
         }
 
         return $categories;
+    }
+
+    /**
+     * Get Product names.
+     *
+     * @param Quote $quote
+     *
+     * @return array
+     */
+    public function getProductNames(Quote $quote)
+    {
+        $names = [];
+
+        foreach ($quote->getAllVisibleItems() as $item) {
+            /** @var \Magento\Quote\Model\Quote\Item $item */
+
+            $name = $item->getName();
+
+            if ($name && !in_array($name, $names)) {
+                $names[] = $name;
+            }
+        }
+
+        return $names;
     }
 }

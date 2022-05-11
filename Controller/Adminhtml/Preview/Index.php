@@ -149,6 +149,7 @@ class Index extends \Magento\Backend\App\Action implements \Magento\Framework\Ap
                     $object['order.cart'] = $quote;
                     $object['order.cart.products'] = $this->helper->getQuoteProducts($quote);
                     $object['order.cart.product_categories'] = $this->helper->getProductCategories($quote);
+                    $object['order.cart.product_names'] = $this->helper->getProductNames($quote);
                     $object['order.store'] = $this->storeRepository->getById($order->getStoreId());
                     $object['address'] = $this->orderAddressRepository->get(
                         $order->getShippingAddressId() ? $order->getShippingAddressId() : $order->getBillingAddressId()

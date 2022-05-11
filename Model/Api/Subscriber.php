@@ -220,6 +220,7 @@ class Subscriber
             'order.cart' => $quote,
             'order.cart.products' => $this->helper->getQuoteProducts($quote),
             'order.cart.product_categories' => $this->helper->getProductCategories($quote),
+            'order.cart.product_names' => $this->helper->getProductNames($quote),
             'address' => $order->getShippingAddress()?$order->getShippingAddress():$order->getBillingAddress(),
             'customer' => $customer
         ], $this->helper->getMetaFields());

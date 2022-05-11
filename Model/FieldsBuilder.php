@@ -2,43 +2,62 @@
 
 namespace Rule\RuleMailer\Model;
 
-use \Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\UrlInterface;
+use Magento\Framework\Serialize\Serializer\Json;
+use Magento\Store\Model\StoreManagerInterface;
+use Rule\RuleMailer\Helper\Data as Helper;
 
 class FieldsBuilder
 {
     /**
-     * @var Data prefix for SUBSCRIBER_GROUP
+     * @var string Data prefix for SUBSCRIBER_GROUP
      */
     const SUBSCRIBER_GROUP = "User";
 
     /**
-     * @var Data prefix for CART_GROUP
+     * @var string Data prefix for CART_GROUP
      */
     const CART_GROUP = "Cart";
 
     /**
-     * @var Data prefix for ORDER_GROUP
+     * @var string Data prefix for ORDER_GROUP
      */
     const ORDER_GROUP = "Order";
 
     /**
-     * @var Data prefix for ADDRESS_GROUP
+     * @var string Data prefix for ADDRESS_GROUP
      */
     const ADDRESS_GROUP = "Address";
 
     /**
      * @var StoreManagerInterface
      */
-    protected $storeManagerInterface;
+    private $storeManagerInterface;
+
+    /**
+     * @var Helper
+     */
+    private $helper;
+
+    /**
+     * @var Json
+     */
+    private $json;
 
     /**
      * FieldsBuilder constructor.
      *
-     * @param null $storeManagerInterface
+     * @param StoreManagerInterface  $storeManagerInterface
+     * @param Helper $helper
      */
-    public function __construct($storeManagerInterface = null)
-    {
+    public function __construct(
+        StoreManagerInterface $storeManagerInterface,
+        Helper $helper,
+        Json $json
+    ) {
         $this->storeManagerInterface = $storeManagerInterface;
+        $this->helper = $helper;
+        $this->json = $json;
     }
 
     /**
@@ -85,7 +104,12 @@ class FieldsBuilder
             ['key' => self::ORDER_GROUP . ".Products", 'value' => $this->getProductsJson($quote), 'type' => 'json'],
             [
                 'key'   => self::ORDER_GROUP . ".Categories",
-                'value' => $this->getProductCategories($quote),
+                'value' => $this->helper->getProductCategories($quote),
+                'type'  => 'multiple'
+            ],
+            [
+                'key'   => self::ORDER_GROUP . '.Names',
+                'value' => $this->helper->getProductNames($quote),
                 'type'  => 'multiple'
             ]
         ];
@@ -138,34 +162,11 @@ class FieldsBuilder
                 'quantity' => $item->getQty(),
                 'price'    => $item->getPrice(),
                 'image'    => $quote->getStore()
-                        ->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA)
+                        ->getBaseUrl(UrlInterface::URL_TYPE_MEDIA)
                     . 'catalog/product' . $product->getImage()
             ];
         }
 
-        return json_encode($products, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-    }
-
-    /**
-     * @param $quote
-     * @return array
-     */
-    protected function getProductCategories($quote)
-    {
-        $categories = [];
-
-        foreach ($quote->getAllVisibleItems() as $item) {
-            $productCategories = $item->getProduct()->getCategoryCollection()->addAttributeToSelect('name');
-
-            foreach ($productCategories->getItems() as $categoryModel) {
-                $category = $categoryModel->getName();
-
-                if ($category != null && !in_array($category, $categories)) {
-                    $categories[] = $category;
-                }
-            }
-        }
-
-        return $categories;
+        return $this->json->serialize($products);
     }
 }
