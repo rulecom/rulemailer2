@@ -1,4 +1,6 @@
-<?php namespace Rule\RuleMailer\Observer;
+<?php
+
+namespace Rule\RuleMailer\Observer;
 
 use Psr\Log\LoggerInterface;
 use Magento\Framework\Event\ObserverInterface;
@@ -9,7 +11,7 @@ use Rule\RuleMailer\Model\Api\Subscriber;
 use Magento\Customer\Model\CustomerFactory;
 
 /**
- * Class CheckoutObserver listener for 'checkout_submit_all_after' event
+ * Class ShipObserver listener for 'sales_order_shipment_save_after' event
  * @SuppressWarnings(PHPMD.CookieAndSessionMisuse)
  */
 class ShipObserver implements ObserverInterface
@@ -70,12 +72,13 @@ class ShipObserver implements ObserverInterface
         /** @var \Magento\Sales\Model\Order\Shipment $shipment */
         $shipment = $event->getShipment();
         $order = $shipment->getOrder();
+
         try {
             $customer = $this->customerFactory->create();
 
-            $customer->setEmail($order->getCustomerEmail());
-            $customer->setFirstname($order->getBillingAddress()->getFirstname());
-            $customer->setLastname($order->getBillingAddress()->getLastname());
+            $customer->setEmail($order->getCustomerEmail())
+                     ->setFirstname($order->getBillingAddress()->getFirstname())
+                     ->setLastname($order->getBillingAddress()->getLastname());
 
             $this->subscriber->completeShipping($customer, $order, $shipment);
         } catch (\Exception $e) {

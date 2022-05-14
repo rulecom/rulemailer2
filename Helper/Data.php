@@ -82,8 +82,9 @@ class Data extends AbstractHelper
                 }
             }
         } catch (\ReflectionException $e) {
-            null;
+            $this->_logger->critical($e);
         }
+
         return $result;
     }
 

@@ -1,4 +1,6 @@
-<?php namespace Rule\RuleMailer\Observer;
+<?php
+
+namespace Rule\RuleMailer\Observer;
 
 use Psr\Log\LoggerInterface;
 use Magento\Framework\Event\ObserverInterface;
@@ -67,6 +69,8 @@ class CheckoutObserver implements ObserverInterface
     public function execute(Observer $observer)
     {
         $event = $observer->getEvent();
+        $order = $event->getOrder();
+        $quote = $event->getQuote();
 
         try {
             if ($this->customerSession->isLoggedIn()) {
@@ -74,18 +78,16 @@ class CheckoutObserver implements ObserverInterface
             } else {
                 $customer = $this->customerFactory->create();
 
-                $customer->setEmail($event->getOrder()->getCustomerEmail());
-                $customer->setFirstname($event->getOrder()->getBillingAddress()->getFirstname());
-                $customer->setLastname($event->getOrder()->getBillingAddress()->getLastname());
+                $customer->setEmail($order->getCustomerEmail())
+                         ->setFirstname($order->getBillingAddress()->getFirstname())
+                         ->setLastname($order->getBillingAddress()->getLastname());
             }
 
             $orders = $event->getOrders();
-            $order = $event->getOrder();
-            $quote = $event->getQuote();
-
-            if (empty($orders) && !is_array($orders)) {
+            if (!is_array($orders) || count($orders) === 0) {
                 $orders = [];
-                if (!empty($order)) {
+
+                if ($order) {
                     $orders[] = $order;
                 }
             }
@@ -93,9 +95,9 @@ class CheckoutObserver implements ObserverInterface
             foreach ($orders as $order) {
                 $this->subscriber->completeOrder($customer, $order, $quote);
             }
-
         } catch (\Exception $e) {
-            $this->logger->info("Filed to complete order: " . $e->getMessage());
+            $this->logger->critical($e);
+            $this->logger->info('Filed to complete order: ' . $e->getMessage());
         }
     }
 }

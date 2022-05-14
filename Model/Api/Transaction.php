@@ -1,7 +1,13 @@
 <?php
+
 namespace Rule\RuleMailer\Model\Api;
 
 use Rule\ApiWrapper\ApiFactory;
+use Rule\ApiWrapper\Api\Api;
+use Magento\Framework\Mail\Address;
+use Magento\Framework\Mail\MessageInterface;
+use Magento\Framework\Mail\MailMessageInterface;
+use Magento\Framework\Mail\EmailMessageInterface;
 
 /**
  * Class Transaction holds transaction during API calls
@@ -9,7 +15,7 @@ use Rule\ApiWrapper\ApiFactory;
 class Transaction
 {
     /**
-     * @var \Rule\ApiWrapper\Api
+     * @var Api
      */
     private $transactionApi;
 
@@ -24,41 +30,53 @@ class Transaction
     }
 
     /**
-     * @param $message
+     * @param MessageInterface|MailMessageInterface|EmailMessageInterface $message
+     * @see https://apidoc.rule.se/#transactions-send-transaction
      */
     public function sendMessage($message)
     {
-        $transaction = $this->buildTransaction($message);
+        $transaction = [];
 
-        foreach ($message->getRecipientsAssoc() as $recipient) {
-            $transaction['to'] = $recipient;
+        if ($message instanceof EmailMessageInterface) {
+            /** @var \Magento\Framework\Mail\EmailMessage $message */
 
-            $this->transactionApi->send($transaction);
+            $from = $message->getFrom();
+            $from1 = array_shift($from);
+
+            $recipients = $message->getTo();
+            foreach ($recipients as $recipient) {
+                /** @var Address $item */
+                $transaction = [
+                    'transaction_type' => 'email',
+                    'transaction_name' => 'some',
+                    'subject' => $message->getSubject(),
+                    'from' => [
+                        'name' => $from1->getName(),
+                        'email' => $from1->getEmail()
+                    ],
+                    'to' => [
+                        'name' => $recipient->getName(),
+                        'email' => $recipient->getEmail()
+                    ],
+                    'content' => [
+                        // phpcs:ignore Magento2.Functions.DiscouragedFunction
+                        'plain' => base64_encode($message->getBodyText()),
+                        // phpcs:ignore Magento2.Functions.DiscouragedFunction
+                        'html' => base64_encode($message->getBodyText())
+                    ]
+                ];
+
+
+            }
         }
-    }
 
-    /**
-     * @param $message
-     * @return array
-     */
-    private function buildTransaction($message)
-    {
-        $html = $message->getBodyHtml(true);
-        $plain = $message->getBodyText(true)
-            ? $message->getBodyText(true)
-            : strip_tags($html);
+        if ($message instanceof MailMessageInterface) {
+            // @todo
+        } elseif ($message instanceof MessageInterface) {
+            /** @var MessageInterface $message */
+            // @todo
+        }
 
-        $transaction = [
-            'transaction_type' => 'email',
-            'transaction_name' => 'some',
-            'subject' => $message->getSubject(),
-            'from' => $message->getFromAssoc(),
-            'content' => [
-                'plain' => $plain,
-                'html' => $html
-            ]
-        ];
-
-        return $transaction;
+        $this->transactionApi->send($transaction);
     }
 }
