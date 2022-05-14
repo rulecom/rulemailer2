@@ -189,7 +189,7 @@ class AccountManagement
                 $this->subscriberApi->updateCustomerCart($customer, $this->cart);
             }
         } catch (\Exception $e) {
-            null;
+            $this->logger->critical($e);
         }
 
         // Return the original result

@@ -14,19 +14,24 @@ use Rule\RuleMailer\Model\Api\Subscriber;
 class AddProductObserver implements ObserverInterface
 {
     /**
-     * @var
-     */
-    private $subscriberApi;
-
-    /**
      * @var ScopeConfigInterface
      */
     private $config;
 
     /**
+     * @var Session
+     */
+    private $customerSession;
+
+    /**
      * @var LoggerInterface
      */
     private $logger;
+
+    /**
+     * @var Subscriber
+     */
+    private $subscriber;
 
     /**
      * AddProductObserver constructor.
@@ -44,8 +49,7 @@ class AddProductObserver implements ObserverInterface
         $this->config = $scopeConfig;
         $this->customerSession = $customerSession;
         $this->logger = $logger;
-
-        $this->subscriberApi = $subscriber->getApi();
+        $this->subscriber = $subscriber;
     }
 
     /**
@@ -58,7 +62,7 @@ class AddProductObserver implements ObserverInterface
             $cart = $event->getCart();
 
             if ($this->customerSession->isLoggedIn()) {
-                $this->subscriberApi->updateCustomerCart($this->customerSession->getCustomer(), $cart);
+                $this->subscriber->updateCustomerCart($this->customerSession->getCustomer(), $cart);
             }
         } catch (\Exception $e) {
             $this->logger->info("Failed to update cart:" . $e->getMessage());
