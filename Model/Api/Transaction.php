@@ -23,6 +23,7 @@ class Transaction
      * Transaction constructor.
      * @param $apiKey
      * @throws \Rule\ApiWrapper\Api\Exception\InvalidResourceException
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function __construct($apiKey)
     {

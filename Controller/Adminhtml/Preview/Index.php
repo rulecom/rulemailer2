@@ -1,83 +1,113 @@
 <?php
+
 namespace Rule\RuleMailer\Controller\Adminhtml\Preview;
 
+use Magento\Backend\App\Action;
+use Magento\Framework\App\Action\HttpGetActionInterface;
+use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Store\Model\StoreRepository;
+use Magento\Backend\App\Action\Context;
+use Magento\Framework\Controller\Result\JsonFactory;
+use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Customer\Api\CustomerRepositoryInterface;
+use Rule\RuleMailer\Model\FieldsBuilder;
+use Rule\RuleMailer\Helper\Data as Helper;
+use Magento\Quote\Api\CartRepositoryInterface;
+use Magento\Sales\Api\OrderAddressRepositoryInterface;
+use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\Sales\Api\ShipmentRepositoryInterface;
+use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
  * Class Index implements controller for admin-panel preview action
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
-class Index extends \Magento\Backend\App\Action implements \Magento\Framework\App\Action\HttpGetActionInterface
+class Index extends Action implements HttpGetActionInterface
 {
     /**
-     * @var \Rule\RuleMailer\Model\FieldsBuilder
+     * @var FieldsBuilder
      */
     private $fieldsBuilder;
+
     /**
-     * @var \Magento\Framework\Controller\Result\JsonFactory
+     * @var JsonFactory
      */
     private $jsonResultFactory;
+
     /**
-     * @var \Magento\Sales\Model\OrderRepository
+     * @var OrderRepositoryInterface
      */
     private $orderRepository;
+
     /**
-     * @var \Magento\Customer\Model\CustomerRepository
+     * @var CustomerRepositoryInterface
      */
     private $customerRepository;
+
     /**
-     * @var \Rule\RuleMailer\Helper\Data
+     * @var Helper
      */
     private $helper;
+
     /**
-     * @var \Magento\Quote\Api\CartRepositoryInterface
+     * @var CartRepositoryInterface
      */
     private $quoteRepository;
+
     /**
-     * @var \Magento\Sales\Api\OrderAddressRepositoryInterface
+     * @var OrderAddressRepositoryInterface
      */
     private $orderAddressRepository;
+
     /**
      * @var StoreRepository
      */
     private $storeRepository;
+
     /**
-     * @var \Magento\Framework\Api\SearchCriteriaBuilder
+     * @var SearchCriteriaBuilder
      */
     private $searchCriteriaBuilder;
+
     /**
-     * @var \Magento\Sales\Api\ShipmentRepositoryInterface
+     * @var ShipmentRepositoryInterface
      */
     private $shipmentRepository;
 
     /**
+     * @var Json
+     */
+    private $json;
+
+    /**
      * Initialize dependencies.
      *
-     * @param \Magento\Backend\App\Action\Context $context
-     * @param \Magento\Framework\Controller\Result\JsonFactory $jsonResultFactory
-     * @param \Rule\RuleMailer\Model\FieldsBuilder $fieldsBuilder
-     * @param \Rule\RuleMailer\Helper\Data $helper
-     * @param \Magento\Sales\Api\OrderRepositoryInterface $orderRepository
-     * @param \Magento\Sales\Api\OrderAddressRepositoryInterface $orderAddressRepository
-     * @param \Magento\Quote\Api\CartRepositoryInterface $quoteRepository
-     * @param \Magento\Sales\Api\ShipmentRepositoryInterface $shipmentRepository
-     * @param StoreRepository $storeRepository
-     * @param \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository
-     * @param \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder
+     * @param Context                         $context
+     * @param JsonFactory                     $jsonResultFactory
+     * @param FieldsBuilder                   $fieldsBuilder
+     * @param Helper                          $helper
+     * @param OrderRepositoryInterface        $orderRepository
+     * @param OrderAddressRepositoryInterface $orderAddressRepository
+     * @param CartRepositoryInterface         $quoteRepository
+     * @param ShipmentRepositoryInterface     $shipmentRepository
+     * @param StoreRepository                 $storeRepository
+     * @param CustomerRepositoryInterface     $customerRepository
+     * @param SearchCriteriaBuilder           $searchCriteriaBuilder
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
-        \Magento\Backend\App\Action\Context $context,
-        \Magento\Framework\Controller\Result\JsonFactory $jsonResultFactory,
-        \Rule\RuleMailer\Model\FieldsBuilder $fieldsBuilder,
-        \Rule\RuleMailer\Helper\Data $helper,
-        \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
-        \Magento\Sales\Api\OrderAddressRepositoryInterface $orderAddressRepository,
-        \Magento\Quote\Api\CartRepositoryInterface $quoteRepository,
-        \Magento\Sales\Api\ShipmentRepositoryInterface $shipmentRepository,
-        \Magento\Store\Model\StoreRepository $storeRepository,
-        \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository,
-        \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder
+        Context $context,
+        JsonFactory $jsonResultFactory,
+        FieldsBuilder $fieldsBuilder,
+        Helper $helper,
+        OrderRepositoryInterface $orderRepository,
+        OrderAddressRepositoryInterface $orderAddressRepository,
+        CartRepositoryInterface $quoteRepository,
+        ShipmentRepositoryInterface $shipmentRepository,
+        StoreRepository $storeRepository,
+        CustomerRepositoryInterface $customerRepository,
+        SearchCriteriaBuilder $searchCriteriaBuilder,
+        Json $json
     ) {
         $this->fieldsBuilder = $fieldsBuilder;
         $this->jsonResultFactory = $jsonResultFactory;
@@ -89,6 +119,7 @@ class Index extends \Magento\Backend\App\Action implements \Magento\Framework\Ap
         $this->customerRepository = $customerRepository;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->shipmentRepository = $shipmentRepository;
+        $this->json = $json;
 
         parent::__construct($context);
     }
@@ -105,7 +136,7 @@ class Index extends \Magento\Backend\App\Action implements \Magento\Framework\Ap
     {
         $id = $this->getRequest()->getParam('id');
         $subject = $this->getRequest()->getParam('subject');
-        $fields = json_decode($this->getRequest()->getParam('fields'), true);
+        $fields = $this->json->unserialize($this->getRequest()->getParam('fields'));
 
         /** @var \Magento\Framework\DataObject $object */
         $object = [];
@@ -120,7 +151,7 @@ class Index extends \Magento\Backend\App\Action implements \Magento\Framework\Ap
                     } else {
                         $quote = $this->quoteRepository->get($id);
                     }
-                } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
+                } catch (NoSuchEntityException $e) {
                     $error = "Quote '$id' or quote for customer '$id' were not found";
                 }
 
@@ -130,22 +161,30 @@ class Index extends \Magento\Backend\App\Action implements \Magento\Framework\Ap
                     $object['cart.product_categories'] = $this->helper->getProductCategories($quote);
                     $object['customer'] = $quote->getCustomer();
                 }
+
                 break;
             case 'order':
                 $order = null;
+
                 try {
                     $order = $this->orderRepository->get($id);
-                } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
-                    $searchCriteria = $this->searchCriteriaBuilder->addFilter('increment_id', $id, 'eq')->create();
+                } catch (NoSuchEntityException $e) {
+                    $searchCriteria = $this->searchCriteriaBuilder->addFilter(
+                        'increment_id',
+                        $id,
+                        'eq'
+                    )->create();
+
                     $list = $this->orderRepository->getList($searchCriteria)->getItems();
-                    if (count($list) >0) {
+
+                    if (count($list) > 0) {
                         $order = $list[0];
                     }
                 }
 
                 if ($order) {
                     $quote = $this->quoteRepository->get($order->getQuoteId());
-                    $object['order  '] = $order;
+                    $object['order'] = $order;
                     $object['order.cart'] = $quote;
                     $object['order.cart.products'] = $this->helper->getQuoteProducts($quote);
                     $object['order.cart.product_categories'] = $this->helper->getProductCategories($quote);
@@ -168,10 +207,15 @@ class Index extends \Magento\Backend\App\Action implements \Magento\Framework\Ap
                 $shipment = null;
                 try {
                     $shipment = $this->shipmentRepository->get($id);
-                } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
-                    $searchCriteria = $this->searchCriteriaBuilder->addFilter('increment_id', $id, 'eq')->create();
+                } catch (NoSuchEntityException $e) {
+                    $searchCriteria = $this->searchCriteriaBuilder->addFilter(
+                        'increment_id',
+                        $id,
+                        'eq'
+                    )->create();
+
                     $list = $this->orderRepository->getList($searchCriteria)->getItems();
-                    if (count($list) >0) {
+                    if (count($list) > 0) {
                         $shipment = $list[0];
                     }
                 }
@@ -179,7 +223,7 @@ class Index extends \Magento\Backend\App\Action implements \Magento\Framework\Ap
                 if ($shipment) {
                     $object['order'] = $shipment->getOrder();
                     $object['shipment'] = $shipment;
-                    $object['shipment.products'] =  $this->helper->getShippingProducts($shipment);
+                    $object['shipment.products'] = $this->helper->getShippingProducts($shipment);
                     $object['shipment.product_categories'] = $this->helper->getShippingProductCategories($shipment);
                     $object['order.store'] = $this->storeRepository->getById($shipment->getStoreId());
                     $object['address'] = $this->orderAddressRepository->get(
@@ -197,13 +241,14 @@ class Index extends \Magento\Backend\App\Action implements \Magento\Framework\Ap
             case 'customer':
                 try {
                     $object['customer'] = $this->customerRepository->getById($id);
-                } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
+                } catch (NoSuchEntityException $e) {
                     try {
                         $object['customer'] = $this->customerRepository->get($id);
-                    } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
+                    } catch (NoSuchEntityException $e) {
                         $error = "Customer '$id' not found";
                     }
                 }
+
                 break;
         }
 
@@ -214,6 +259,7 @@ class Index extends \Magento\Backend\App\Action implements \Magento\Framework\Ap
             $values = $this->helper->extractValues($object, empty($fields) ? [] : $fields);
             $result->setData($values);
         }
+
         return $result;
     }
 }

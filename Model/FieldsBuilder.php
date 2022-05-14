@@ -82,10 +82,10 @@ class FieldsBuilder
      */
     public function buildOrderFields(OrderInterface $order, Quote $quote)
     {
+        $address = $order->getBillingAddress();
+
         if ($order->getShippingAddress()) {
             $address = $order->getShippingAddress();
-        } else {
-            $address = $order->getBillingAddress();
         }
 
         return [

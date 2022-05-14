@@ -11,42 +11,45 @@ use Magento\Store\Model\ScopeInterface;
 class Data extends AbstractHelper
 {
     /**
-     * @param null $store_id
+     * @param mixed|null $storeId
+     *
      * @return mixed
      */
-    public function getApiKey($store_id = null)
+    public function getApiKey($storeId = null)
     {
         return $this->scopeConfig->getValue(
             'rule_rulemailer/general/api_key',
             ScopeInterface::SCOPE_STORE,
-            $store_id
+            $storeId
         );
     }
 
     /**
-     * @param null $store_id
+     * @param mixed|null $storeId
+     *
      * @return mixed
      */
-    public function getUseTransactional($store_id = null)
+    public function getUseTransactional($storeId = null)
     {
         return $this->scopeConfig->getValue(
             'rule_rulemailer/general/use_transactional',
             ScopeInterface::SCOPE_STORE,
-            $store_id
+            $storeId
         );
     }
 
     /**
-     * @param null $store_id
+     * @param mixed|null $storeId
+     *
      * @return mixed
      */
-    public function getMetaFields($store_id = null)
+    public function getMetaFields($storeId = null)
     {
         return json_decode(
             $this->scopeConfig->getValue(
                 'rule_rulemailer/general/meta_fields',
                 ScopeInterface::SCOPE_STORE,
-                $store_id
+                $storeId
             ),
             true
         );
@@ -98,13 +101,14 @@ class Data extends AbstractHelper
             return count(
                 array_filter(
                     $subject,
-                    function ($k) {
-                        return !is_int($k);
+                    function ($key) {
+                        return !is_int($key);
                     },
                     ARRAY_FILTER_USE_KEY
                 )
             ) == 0;
         }
+
         return false;
     }
 
@@ -142,6 +146,7 @@ class Data extends AbstractHelper
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @SuppressWarnings(PHPMD.ElseExpression)
      */
     public function extractValues($subject, $fields = [], $stack = [])
     {
@@ -161,7 +166,7 @@ class Data extends AbstractHelper
                 $class = new \ReflectionClass($subject);
             }
         } catch (\Exception $e) {
-            null;
+            //
         }
 
         // if no fields path specified, taking all possible of them
@@ -243,8 +248,8 @@ class Data extends AbstractHelper
             }
 
             if (is_array($value)) {
-                foreach ($value as $k => $v) {
-                    $result[trim($key . '.' . $k, '.')] = $v;
+                foreach ($value as $key1 => $val1) {
+                    $result[trim($key . '.' . $key1, '.')] = $val1;
                 }
             } else {
                 $result[$key] = $value;

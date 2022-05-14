@@ -65,6 +65,7 @@ class CheckoutObserver implements ObserverInterface
 
     /**
      * @param Observer $observer
+     * @SuppressWarnings(PHPMD.ElseExpression)
      */
     public function execute(Observer $observer)
     {

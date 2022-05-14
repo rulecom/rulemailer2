@@ -93,8 +93,8 @@ class Subscriber
         return 0 == count(
             array_filter(
                 $value,
-                function ($v, $k) {
-                    return !is_int($k) || is_array($v) || is_object($v);
+                function ($val, $key) {
+                    return !is_int($key) || is_array($val) || is_object($val);
                 },
                 ARRAY_FILTER_USE_BOTH
             )
@@ -104,6 +104,7 @@ class Subscriber
     /**
      * @param $data
      * @return array
+     * @SuppressWarnings(PHPMD.ElseExpression)
      */
     public function makeFields($data)
     {

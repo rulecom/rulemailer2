@@ -149,6 +149,7 @@ class AccountManagement
      * @param                                           $websiteId
      * @return mixed
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings(PHPMD.ElseExpression)
      */
     public function aroundIsEmailAvailable(
         AccountManagementSubject $subject,
