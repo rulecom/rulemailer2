@@ -48,8 +48,11 @@ class SubscriptionObserver implements ObserverInterface
     /**
      * SubscriptionObserver constructor.
      *
-     * @param ScopeConfigInterface $scopeConfig
-     * @param LoggerInterface      $logger
+     * @param ScopeConfigInterface  $scopeConfig
+     * @param LoggerInterface       $logger
+     * @param StoreManagerInterface $storeManager
+     * @param Resolver              $resolver
+     * @param Subscriber            $subscriber
      */
     public function __construct(
         ScopeConfigInterface $scopeConfig,

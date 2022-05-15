@@ -94,6 +94,7 @@ class Index extends Action implements HttpGetActionInterface
      * @param StoreRepository                 $storeRepository
      * @param CustomerRepositoryInterface     $customerRepository
      * @param SearchCriteriaBuilder           $searchCriteriaBuilder
+     * @param Json                            $json
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(

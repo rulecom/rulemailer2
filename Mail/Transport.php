@@ -33,6 +33,13 @@ class Transport
      */
     private $logger;
 
+    /**
+     * Transport Constructor.
+     *
+     * @param ProductMetadataInterface $productMetadata
+     * @param Helper                   $helper
+     * @param LoggerInterface          $logger
+     */
     public function __construct(
         ProductMetadataInterface $productMetadata,
         Helper $helper,

@@ -1,4 +1,5 @@
 <?php
+
 namespace Rule\RuleMailer\Plugin\Magento\Customer\Model;
 
 use Magento\Checkout\Model\Cart;
@@ -13,7 +14,6 @@ use Magento\Framework\Message\ManagerInterface;
 use Psr\Log\LoggerInterface as Logger;
 use Magento\Framework\Data\Form\FormKey\Validator;
 use Rule\RuleMailer\Model\Api\Subscriber;
-
 
 /**
  * Class AccountManagement implements plugin over \Magento\Customer\Model\AccountManagement class

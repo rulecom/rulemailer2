@@ -66,8 +66,6 @@ class Transaction
                         'html' => base64_encode($message->getBodyText())
                     ]
                 ];
-
-
             }
         }
 

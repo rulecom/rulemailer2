@@ -62,6 +62,7 @@ class Subscriber
     /**
      * Subscriber constructor.
      *
+     * @param Json            $json
      * @param Helper          $helper
      * @param FieldsBuilder   $fieldsBuilder
      * @param LoggerInterface $logger

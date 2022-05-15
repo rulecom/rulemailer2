@@ -48,13 +48,15 @@ class NewAction extends Subscriber implements HttpPostActionInterface
     /**
      * Initialize dependencies.
      *
-     * @param Context $context
-     * @param SubscriberFactory $subscriberFactory
-     * @param Session $customerSession
-     * @param StoreManagerInterface $storeManager
-     * @param CustomerUrl $customerUrl
+     * @param Context                   $context
+     * @param SubscriberFactory         $subscriberFactory
+     * @param Session                   $customerSession
+     * @param StoreManagerInterface     $storeManager
+     * @param CustomerUrl               $customerUrl
      * @param CustomerAccountManagement $customerAccountManagement
-     * @param ScopeConfigInterface $scopeConfig
+     * @param Validator                 $formKeyValidator
+     * @param LoggerInterface           $logger
+     * @param ScopeConfigInterface      $scopeConfig
      */
     public function __construct(
         Context $context,
@@ -128,9 +130,14 @@ class NewAction extends Subscriber implements HttpPostActionInterface
                 $this->messageManager->addException($e, __('Something went wrong with the subscription.'));
             }
         }
+
         $this->getResponse()->setRedirect($this->_redirect->getRedirectUrl());
     }
 
+    /**
+     * @return void
+     * @throws LocalizedException
+     */
     private function validateHoneypot()
     {
         if ($this->getRequest()->getPost('hpt-url')) {

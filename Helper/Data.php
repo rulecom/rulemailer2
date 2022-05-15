@@ -20,6 +20,10 @@ class Data extends AbstractHelper
      */
     private $json;
 
+    /**
+     * @param Context $context
+     * @param Json    $json
+     */
     public function __construct(
         Context $context,
         Json $json
@@ -30,6 +34,8 @@ class Data extends AbstractHelper
     }
 
     /**
+     * Get Api Key.
+     *
      * @param mixed|null $storeId
      *
      * @return mixed
@@ -44,6 +50,8 @@ class Data extends AbstractHelper
     }
 
     /**
+     * Get "Use Transactional" config.
+     *
      * @param mixed|null $storeId
      *
      * @return mixed
@@ -58,6 +66,8 @@ class Data extends AbstractHelper
     }
 
     /**
+     * Get Meta Fields.
+     *
      * @param mixed|null $storeId
      *
      * @return mixed
@@ -74,6 +84,8 @@ class Data extends AbstractHelper
     }
 
     /**
+     * Get Methods.
+     *
      * @param $subject
      * @param string $prefix
      * @return array
@@ -112,6 +124,8 @@ class Data extends AbstractHelper
     }
 
     /**
+     * Check if array is numeric.
+     *
      * @param $subject
      * @return bool
      */
@@ -133,6 +147,8 @@ class Data extends AbstractHelper
     }
 
     /**
+     * Collapse Array.
+     *
      * @param $subject
      * @return array
      */
@@ -159,6 +175,8 @@ class Data extends AbstractHelper
     }
 
     /**
+     * Extract Values.
+     *
      * @param $subject
      * @param array $fields
      * @param array $stack
@@ -167,6 +185,7 @@ class Data extends AbstractHelper
      * @SuppressWarnings(PHPMD.NPathComplexity)
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      * @SuppressWarnings(PHPMD.ElseExpression)
+     * @SuppressWarnings(PHPMD.MissingImport)
      */
     public function extractValues($subject, $fields = [], $stack = [])
     {
@@ -176,6 +195,7 @@ class Data extends AbstractHelper
             if (in_array($subject, $stack) || count($stack) > 100) {
                 return 'cyclic reference';
             }
+
             $stack[] = $subject;
         }
 
@@ -301,6 +321,7 @@ class Data extends AbstractHelper
                     $this->collapseArray($output[$key]);
                 }
             }
+
             $result = $output;
         }
 
@@ -308,6 +329,8 @@ class Data extends AbstractHelper
     }
 
     /**
+     * Get Quote Products.
+     *
      * @param \Magento\Quote\Model\Quote $quote
      * @return array
      */
@@ -332,6 +355,8 @@ class Data extends AbstractHelper
     }
 
     /**
+     * Get Shipping Products.
+     *
      * @param \Magento\Sales\Model\Order\Shipment $shipment
      * @return array
      */
@@ -356,6 +381,8 @@ class Data extends AbstractHelper
     }
 
     /**
+     * Get Shipping Products Categories.
+     *
      * @param \Magento\Sales\Model\Order\Shipment $shipment
      * @return array
      */
@@ -380,6 +407,8 @@ class Data extends AbstractHelper
     }
 
     /**
+     * Get Products Categories.
+     *
      * @param Quote $quote
      * @return array
      */

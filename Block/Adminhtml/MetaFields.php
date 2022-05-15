@@ -34,20 +34,22 @@ class MetaFields extends Field
 
     /**
      * MetaFields constructor.
-     * @param Helper $helper
+     *
+     * @param Context              $context
+     * @param Helper               $helper
      * @param ScopeConfigInterface $scopeConfig
-     * @param Reader $reader
-     * @param Parser $parser
-     * @param Context $context
-     * @param array $data
+     * @param Reader               $reader
+     * @param Parser               $parser
+     * @param LoggerInterface      $logger
+     * @param array                $data
      */
     public function __construct(
+        Context $context,
         Helper $helper,
         ScopeConfigInterface $scopeConfig,
         Reader $reader,
         Parser $parser,
         LoggerInterface $logger,
-        Context $context,
         array $data = []
     ) {
         try {
