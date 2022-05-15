@@ -21,6 +21,7 @@ use Magento\Framework\Validator\EmailAddress;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * @SuppressWarnings(PHPMD.LongVariable)
  */
 class NewAction extends Subscriber implements HttpPostActionInterface
 {
@@ -85,6 +86,7 @@ class NewAction extends Subscriber implements HttpPostActionInterface
      *
      * @throws LocalizedException
      * @return void
+     * @SuppressWarnings(PHPMD.ElseExpression)
      */
     public function execute()
     {

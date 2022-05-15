@@ -21,6 +21,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
 /**
  * Class Index implements controller for admin-panel preview action
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * @SuppressWarnings(PHPMD.LongVariable)
  */
 class Index extends Action implements HttpGetActionInterface
 {
@@ -131,6 +132,8 @@ class Index extends Action implements HttpGetActionInterface
      * @return \Magento\Framework\Controller\Result\Json
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @SuppressWarnings(PHPMD.ShortVariable)
+     * @SuppressWarnings(PHPMD.ElseExpression)
      */
     public function execute()
     {

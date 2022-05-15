@@ -86,6 +86,7 @@ class MetaFields extends Field
      * @param AbstractElement $element
      * @return string
      * @codingStandardsIgnoreStart
+     * @SuppressWarnings(PHPMD.CamelCaseMethodName)
      */
     protected function _getElementHtml(AbstractElement $element)
     {

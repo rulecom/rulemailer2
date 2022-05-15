@@ -67,6 +67,7 @@ class Subscriber
      * @param LoggerInterface $logger
      *
      * @throws \Rule\ApiWrapper\Api\Exception\InvalidResourceException
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function __construct(
         Json $json,

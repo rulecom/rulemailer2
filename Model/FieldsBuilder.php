@@ -9,6 +9,9 @@ use Magento\Quote\Model\Quote;
 use Magento\Store\Model\StoreManagerInterface;
 use Rule\RuleMailer\Helper\Data as Helper;
 
+/**
+ * @SuppressWarnings(PHPMD.LongVariable)
+ */
 class FieldsBuilder
 {
     /**

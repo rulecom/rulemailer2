@@ -1,15 +1,34 @@
-<?php namespace Rule\RuleMailer\Helper;
+<?php
 
+namespace Rule\RuleMailer\Helper;
+
+use Magento\Framework\DataObject;
 use Magento\Quote\Model\Quote;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
+use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Store\Model\ScopeInterface;
 
 /**
  * Class Data contains shared functions used cross extension
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class Data extends AbstractHelper
 {
+    /**
+     * @var Json
+     */
+    private $json;
+
+    public function __construct(
+        Context $context,
+        Json $json
+    ) {
+        $this->json = $json;
+
+        parent::__construct($context);
+    }
+
     /**
      * @param mixed|null $storeId
      *
@@ -45,13 +64,12 @@ class Data extends AbstractHelper
      */
     public function getMetaFields($storeId = null)
     {
-        return json_decode(
+        return $this->json->unserialize(
             $this->scopeConfig->getValue(
                 'rule_rulemailer/general/meta_fields',
                 ScopeInterface::SCOPE_STORE,
                 $storeId
-            ),
-            true
+            )
         );
     }
 
@@ -59,10 +77,12 @@ class Data extends AbstractHelper
      * @param $subject
      * @param string $prefix
      * @return array
+     * @SuppressWarnings(PHPMD.MissingImport)
      */
     public function getMethods($subject, $prefix = '')
     {
         $result = [];
+
         try {
             $class = new \ReflectionClass($subject);
             $methods = $class->getMethods(\ReflectionMethod::IS_PUBLIC);
@@ -173,7 +193,7 @@ class Data extends AbstractHelper
         if (empty($fields)) {
             if (is_array($subject)) {
                 $fields = array_keys($subject);
-            } elseif ($subject instanceof \Magento\Framework\DataObject) {
+            } elseif ($subject instanceof DataObject) {
                 $fields = array_keys($subject->getData());
             } elseif ($class != null) {
                 $fields = array_keys($this->getMethods($subject));
@@ -192,11 +212,11 @@ class Data extends AbstractHelper
                 $path = explode('.', $field);
                 $key = array_shift($path);
 
-                if (is_array($subject) || $subject instanceof \Magento\Framework\DataObject) {
+                if (is_array($subject) || $subject instanceof DataObject) {
                     for ($i=count($path); $i>0; $i--) {
                         $test = $key . '.' . implode('.', array_slice($path, 0, $i));
                         if (is_array($subject) && array_key_exists($test, $subject) ||
-                            $subject instanceof \Magento\Framework\DataObject && $subject->hasData($test)
+                            $subject instanceof DataObject && $subject->hasData($test)
                         ) {
                             $key = $test;
                             $path = array_slice($path, $i);
@@ -230,7 +250,7 @@ class Data extends AbstractHelper
 
             if (is_array($subject) && array_key_exists($key, $subject)) {
                 $value = $subject[$key];
-            } elseif ($subject instanceof \Magento\Framework\DataObject && $subject->hasData($key)) {
+            } elseif ($subject instanceof DataObject && $subject->hasData($key)) {
                 $value = $subject->getData($key);
             } elseif ($class != null) {
                 $method = 'get' . str_replace('_', '', ucwords($key, "_"));
@@ -260,9 +280,9 @@ class Data extends AbstractHelper
             $output = [];
             foreach ($fields as $key => $path) {
                 if (strpos($path, '{') === 0 || strpos($path, '"') === 0) {
-                    $output[$key] = json_decode($path);
+                    $output[$key] = $this->json->unserialize($path);
                     if ($output[$key] === null) {
-                        $output[$key] = json_decode(substr($path, 1, -1));
+                        $output[$key] = $this->json->unserialize(substr($path, 1, -1));
                     }
                     continue;
                 }
