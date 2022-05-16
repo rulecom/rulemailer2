@@ -1,16 +1,19 @@
 <?php
+
 namespace Rule\RuleMailer\Plugin\Magento\Customer\Model;
 
 use Magento\Checkout\Model\Cart;
+use Magento\Customer\Model\AccountManagement as AccountManagementSubject;
 use Magento\Customer\Model\CustomerFactory;
+use Magento\Customer\Api\Data\CustomerInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Framework\App\Request\Http as Request;
-use Rule\RuleMailer\Model\Api\Subscriber;
 use Magento\Framework\Controller\Result\RedirectFactory;
 use Magento\Framework\Message\ManagerInterface;
 use Psr\Log\LoggerInterface as Logger;
 use Magento\Framework\Data\Form\FormKey\Validator;
+use Rule\RuleMailer\Model\Api\Subscriber;
 
 /**
  * Class AccountManagement implements plugin over \Magento\Customer\Model\AccountManagement class
@@ -24,37 +27,37 @@ class AccountManagement
     /**
      * @var ScopeConfigInterface
      */
-    protected $scopeConfig;
+    private $scopeConfig;
 
     /**
      * @var Subscriber
      */
-    protected $subscriberApi;
+    private $subscriberApi;
 
     /**
      * @var Cart
      */
-    protected $cart;
+    private $cart;
 
     /**
      * @var CustomerFactory
      */
-    protected $customerFactory;
+    private $customerFactory;
 
     /**
      * @var Request
      */
-    protected $request;
+    private $request;
 
     /**
      * @var ManagerInterface
      */
-    protected $messageManager;
+    private $messageManager;
 
     /**
      * @var RedirectFactory
      */
-    protected $redirectFactory;
+    private $redirectFactory;
 
     /**
      * @var Logger
@@ -101,33 +104,34 @@ class AccountManagement
     }
 
     /**
-     * @param \Magento\Customer\Model\AccountManagement $subject
+     * @param AccountManagementSubject $subject
      * @param callable $proceed
-     * @param \Magento\Customer\Api\Data\CustomerInterface $customer
+     * @param CustomerInterface $customer
      * @param null $password
      * @param string $redirectUrl
      * @return mixed
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function aroundCreateAccount(
-        \Magento\Customer\Model\AccountManagement $subject,
+        AccountManagementSubject $subject,
         callable $proceed,
-        \Magento\Customer\Api\Data\CustomerInterface $customer,
+        CustomerInterface $customer,
         $password = null,
         $redirectUrl = ''
     ) {
-        // validate form key
+        // Validate form key
         if (!$this->formKeyValidator->validate($this->request)) {
-            $this->logger->info("Form_Key:Invalid Form Key");
+            $this->logger->info('Form_Key:Invalid Form Key');
         }
-        $this->logger->info("Form_Key:Valid Form Key");
+
+        $this->logger->info('Form_Key:Valid Form Key');
 
         // Block if honeypot field is filled out
         if ($this->request->getPost('hpt-url')) {
-            $postData = $this->request->getPost();
-            $line = "-- Spam Attempt --\nPOST DATA: " . json_encode($postData) . "\n";
-            $this->logger->info($line);
+            $this->logger->info('-- Spam Attempt --', $this->request->getPost());
+
             $this->messageManager->addError('Invalid form data. Please try again.');
+
             return $this->redirectFactory->create()->setPath('customer/account/create');
         }
 
@@ -139,15 +143,16 @@ class AccountManagement
      * This is started around isEmailAvailable call. We will catch the e-mail used for the field in checkout
      * to populate and data in RuleMailer, if we're supposed to.
      *
-     * @param \Magento\Customer\Model\AccountManagement $subject
+     * @param AccountManagementSubject                  $subject
      * @param \Closure                                  $proceed
      * @param                                           $customerEmail
      * @param                                           $websiteId
      * @return mixed
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings(PHPMD.ElseExpression)
      */
     public function aroundIsEmailAvailable(
-        \Magento\Customer\Model\AccountManagement $subject,
+        AccountManagementSubject $subject,
         \Closure $proceed,
         $customerEmail,
         $websiteId = null
@@ -178,7 +183,9 @@ class AccountManagement
 
             // Check if we should send the customer to rule
             if ($sendToRule &&
-                !($this->request->getModuleName() == 'checkout' && $this->request->getActionName() == 'success')) {
+                !($this->request->getModuleName() === 'checkout' &&
+                  $this->request->getActionName() === 'success')
+            ) {
                 // Create a temporary customer account
                 $customer = $this->customerFactory->create();
 
@@ -189,7 +196,7 @@ class AccountManagement
                 $this->subscriberApi->updateCustomerCart($customer, $this->cart);
             }
         } catch (\Exception $e) {
-            null;
+            $this->logger->critical($e);
         }
 
         // Return the original result

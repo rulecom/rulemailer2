@@ -64,7 +64,8 @@ class CartObserver implements ObserverInterface
             try {
                 $this->subscriber->updateCustomerCart($this->customerSession->getCustomer(), $cart);
             } catch (\Exception $e) {
-                $this->logger->info("Failed to update cart:" . $e->getMessage());
+                $this->logger->critical($e);
+                $this->logger->info('Failed to update cart: ' . $e->getMessage());
             }
         }
     }

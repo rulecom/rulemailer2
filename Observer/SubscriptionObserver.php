@@ -1,4 +1,6 @@
-<?php namespace Rule\RuleMailer\Observer;
+<?php
+
+namespace Rule\RuleMailer\Observer;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Event\Observer;
@@ -14,7 +16,7 @@ use Rule\RuleMailer\Model\Api\Subscriber;
 class SubscriptionObserver implements ObserverInterface
 {
     /**
-     * @var Prefix for NEWSLETTER group
+     * @var string Prefix for NEWSLETTER group
      */
     const NEWSLETTER_GROUP = 'Newsletter';
 
@@ -46,8 +48,11 @@ class SubscriptionObserver implements ObserverInterface
     /**
      * SubscriptionObserver constructor.
      *
-     * @param ScopeConfigInterface $scopeConfig
-     * @param LoggerInterface      $logger
+     * @param ScopeConfigInterface  $scopeConfig
+     * @param LoggerInterface       $logger
+     * @param StoreManagerInterface $storeManager
+     * @param Resolver              $resolver
+     * @param Subscriber            $subscriber
      */
     public function __construct(
         ScopeConfigInterface $scopeConfig,
@@ -91,6 +96,7 @@ class SubscriptionObserver implements ObserverInterface
 
             $this->subscriber->addSubscriber($event->getSubscriber()->getEmail(), $tags, $fields);
         } catch (\Exception $e) {
+            $this->logger->critical($e);
             $this->logger->info("Failer to send subscriber: " . $e->getMessage());
         }
     }

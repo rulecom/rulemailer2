@@ -1,64 +1,100 @@
-<?php namespace Rule\RuleMailer\Helper;
+<?php
 
+namespace Rule\RuleMailer\Helper;
+
+use Magento\Framework\DataObject;
+use Magento\Quote\Model\Quote;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
+use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Store\Model\ScopeInterface;
 
 /**
  * Class Data contains shared functions used cross extension
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class Data extends AbstractHelper
 {
     /**
-     * @param null $store_id
+     * @var Json
+     */
+    private $json;
+
+    /**
+     * @param Context $context
+     * @param Json    $json
+     */
+    public function __construct(
+        Context $context,
+        Json $json
+    ) {
+        $this->json = $json;
+
+        parent::__construct($context);
+    }
+
+    /**
+     * Get Api Key.
+     *
+     * @param mixed|null $storeId
+     *
      * @return mixed
      */
-    public function getApiKey($store_id = null)
+    public function getApiKey($storeId = null)
     {
         return $this->scopeConfig->getValue(
             'rule_rulemailer/general/api_key',
             ScopeInterface::SCOPE_STORE,
-            $store_id
+            $storeId
         );
     }
 
     /**
-     * @param null $store_id
+     * Get "Use Transactional" config.
+     *
+     * @param mixed|null $storeId
+     *
      * @return mixed
      */
-    public function getUseTransactional($store_id = null)
+    public function getUseTransactional($storeId = null)
     {
         return $this->scopeConfig->getValue(
             'rule_rulemailer/general/use_transactional',
             ScopeInterface::SCOPE_STORE,
-            $store_id
+            $storeId
         );
     }
 
     /**
-     * @param null $store_id
+     * Get Meta Fields.
+     *
+     * @param mixed|null $storeId
+     *
      * @return mixed
      */
-    public function getMetaFields($store_id = null)
+    public function getMetaFields($storeId = null)
     {
-        return json_decode(
+        return $this->json->unserialize(
             $this->scopeConfig->getValue(
                 'rule_rulemailer/general/meta_fields',
                 ScopeInterface::SCOPE_STORE,
-                $store_id
-            ),
-            true
+                $storeId
+            )
         );
     }
 
     /**
+     * Get Methods.
+     *
      * @param $subject
      * @param string $prefix
      * @return array
+     * @SuppressWarnings(PHPMD.MissingImport)
      */
     public function getMethods($subject, $prefix = '')
     {
         $result = [];
+
         try {
             $class = new \ReflectionClass($subject);
             $methods = $class->getMethods(\ReflectionMethod::IS_PUBLIC);
@@ -81,12 +117,15 @@ class Data extends AbstractHelper
                 }
             }
         } catch (\ReflectionException $e) {
-            null;
+            $this->_logger->critical($e);
         }
+
         return $result;
     }
 
     /**
+     * Check if array is numeric.
+     *
      * @param $subject
      * @return bool
      */
@@ -96,17 +135,20 @@ class Data extends AbstractHelper
             return count(
                 array_filter(
                     $subject,
-                    function ($k) {
-                        return !is_int($k);
+                    function ($key) {
+                        return !is_int($key);
                     },
                     ARRAY_FILTER_USE_KEY
                 )
             ) == 0;
         }
+
         return false;
     }
 
     /**
+     * Collapse Array.
+     *
      * @param $subject
      * @return array
      */
@@ -133,6 +175,8 @@ class Data extends AbstractHelper
     }
 
     /**
+     * Extract Values.
+     *
      * @param $subject
      * @param array $fields
      * @param array $stack
@@ -140,6 +184,8 @@ class Data extends AbstractHelper
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @SuppressWarnings(PHPMD.ElseExpression)
+     * @SuppressWarnings(PHPMD.MissingImport)
      */
     public function extractValues($subject, $fields = [], $stack = [])
     {
@@ -149,6 +195,7 @@ class Data extends AbstractHelper
             if (in_array($subject, $stack) || count($stack) > 100) {
                 return 'cyclic reference';
             }
+
             $stack[] = $subject;
         }
 
@@ -159,14 +206,14 @@ class Data extends AbstractHelper
                 $class = new \ReflectionClass($subject);
             }
         } catch (\Exception $e) {
-            null;
+            //
         }
 
         // if no fields path specified, taking all possible of them
         if (empty($fields)) {
             if (is_array($subject)) {
                 $fields = array_keys($subject);
-            } elseif ($subject instanceof \Magento\Framework\DataObject) {
+            } elseif ($subject instanceof DataObject) {
                 $fields = array_keys($subject->getData());
             } elseif ($class != null) {
                 $fields = array_keys($this->getMethods($subject));
@@ -185,11 +232,11 @@ class Data extends AbstractHelper
                 $path = explode('.', $field);
                 $key = array_shift($path);
 
-                if (is_array($subject) || $subject instanceof \Magento\Framework\DataObject) {
+                if (is_array($subject) || $subject instanceof DataObject) {
                     for ($i=count($path); $i>0; $i--) {
                         $test = $key . '.' . implode('.', array_slice($path, 0, $i));
                         if (is_array($subject) && array_key_exists($test, $subject) ||
-                            $subject instanceof \Magento\Framework\DataObject && $subject->hasData($test)
+                            $subject instanceof DataObject && $subject->hasData($test)
                         ) {
                             $key = $test;
                             $path = array_slice($path, $i);
@@ -223,7 +270,7 @@ class Data extends AbstractHelper
 
             if (is_array($subject) && array_key_exists($key, $subject)) {
                 $value = $subject[$key];
-            } elseif ($subject instanceof \Magento\Framework\DataObject && $subject->hasData($key)) {
+            } elseif ($subject instanceof DataObject && $subject->hasData($key)) {
                 $value = $subject->getData($key);
             } elseif ($class != null) {
                 $method = 'get' . str_replace('_', '', ucwords($key, "_"));
@@ -241,8 +288,8 @@ class Data extends AbstractHelper
             }
 
             if (is_array($value)) {
-                foreach ($value as $k => $v) {
-                    $result[trim($key . '.' . $k, '.')] = $v;
+                foreach ($value as $key1 => $val1) {
+                    $result[trim($key . '.' . $key1, '.')] = $val1;
                 }
             } else {
                 $result[$key] = $value;
@@ -253,9 +300,9 @@ class Data extends AbstractHelper
             $output = [];
             foreach ($fields as $key => $path) {
                 if (strpos($path, '{') === 0 || strpos($path, '"') === 0) {
-                    $output[$key] = json_decode($path);
+                    $output[$key] = $this->json->unserialize($path);
                     if ($output[$key] === null) {
-                        $output[$key] = json_decode(substr($path, 1, -1));
+                        $output[$key] = $this->json->unserialize(substr($path, 1, -1));
                     }
                     continue;
                 }
@@ -274,6 +321,7 @@ class Data extends AbstractHelper
                     $this->collapseArray($output[$key]);
                 }
             }
+
             $result = $output;
         }
 
@@ -281,6 +329,8 @@ class Data extends AbstractHelper
     }
 
     /**
+     * Get Quote Products.
+     *
      * @param \Magento\Quote\Model\Quote $quote
      * @return array
      */
@@ -305,6 +355,8 @@ class Data extends AbstractHelper
     }
 
     /**
+     * Get Shipping Products.
+     *
      * @param \Magento\Sales\Model\Order\Shipment $shipment
      * @return array
      */
@@ -329,6 +381,8 @@ class Data extends AbstractHelper
     }
 
     /**
+     * Get Shipping Products Categories.
+     *
      * @param \Magento\Sales\Model\Order\Shipment $shipment
      * @return array
      */
@@ -353,10 +407,12 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param \Magento\Quote\Model\Quote $quote
+     * Get Products Categories.
+     *
+     * @param Quote $quote
      * @return array
      */
-    public function getProductCategories(\Magento\Quote\Model\Quote $quote)
+    public function getProductCategories(Quote $quote)
     {
         $categories = [];
 
@@ -373,5 +429,29 @@ class Data extends AbstractHelper
         }
 
         return $categories;
+    }
+
+    /**
+     * Get Product names.
+     *
+     * @param Quote $quote
+     *
+     * @return array
+     */
+    public function getProductNames(Quote $quote)
+    {
+        $names = [];
+
+        foreach ($quote->getAllVisibleItems() as $item) {
+            /** @var \Magento\Quote\Model\Quote\Item $item */
+
+            $name = $item->getName();
+
+            if ($name && !in_array($name, $names)) {
+                $names[] = $name;
+            }
+        }
+
+        return $names;
     }
 }

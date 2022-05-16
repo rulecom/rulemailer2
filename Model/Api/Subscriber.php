@@ -2,8 +2,12 @@
 
 namespace Rule\RuleMailer\Model\Api;
 
+use Magento\Framework\Serialize\Serializer\Json;
 use Rule\ApiWrapper\ApiFactory;
+use Rule\ApiWrapper\Api\Api;
 use Rule\RuleMailer\Model\FieldsBuilder;
+use Rule\RuleMailer\Helper\Data as Helper;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class Subscriber implements base operations for 'subscriber'
@@ -11,27 +15,32 @@ use Rule\RuleMailer\Model\FieldsBuilder;
 class Subscriber
 {
     /**
-     * @var Tag name for 'Newsletter'
+     * @var string Tag name for 'Newsletter'
      */
     const NEWSLETTER_TAG = 'Newsletter';
 
     /**
-     * @var Tag name for 'CartInProgress'
+     * @var string Tag name for 'CartInProgress'
      */
     const CART_IN_PROGRESS_TAG = 'CartInProgress';
 
     /**
-     * @var Tag name for 'OrderCompleted'
+     * @var string Tag name for 'OrderCompleted'
      */
     const CHECKOUT_COMPLETE_TAG = 'OrderCompleted';
 
     /**
-     * @var Tag name for 'OrderShipped'
+     * @var string Tag name for 'OrderShipped'
      */
     const SHIPPING_COMPLETE_TAG = 'OrderShipped';
 
     /**
-     * @var\Rule\ApiWrapper\Api
+     * @var Json
+     */
+    private $json;
+
+    /**
+     * @var Api
      */
     private $subscriberApi;
 
@@ -41,7 +50,7 @@ class Subscriber
     private $fieldsBuilder;
 
     /**
-     * @var \Rule\RuleMailer\Helper\Data
+     * @var Helper
      */
     private $helper;
 
@@ -53,17 +62,28 @@ class Subscriber
     /**
      * Subscriber constructor.
      *
-     * @param \Rule\RuleMailer\Helper\Data $helper
-     * @param \Psr\Log\LoggerInterface $logger
+     * @param Json            $json
+     * @param Helper          $helper
+     * @param FieldsBuilder   $fieldsBuilder
+     * @param LoggerInterface $logger
+     *
      * @throws \Rule\ApiWrapper\Api\Exception\InvalidResourceException
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
-    public function __construct(\Rule\RuleMailer\Helper\Data $helper, \Psr\Log\LoggerInterface $logger)
-    {
-        $apiKey = $helper->getApiKey();
+    public function __construct(
+        Json $json,
+        Helper $helper,
+        FieldsBuilder $fieldsBuilder,
+        LoggerInterface $logger
+    ) {
+        $this->json = $json;
         $this->helper = $helper;
-        $this->subscriberApi = ApiFactory::make($apiKey, 'subscriber');
-        $this->fieldsBuilder = new FieldsBuilder();
+        $this->fieldsBuilder = $fieldsBuilder;
         $this->logger = $logger;
+        $this->subscriberApi = ApiFactory::make(
+            $helper->getApiKey(),
+            'subscriber'
+        );
     }
 
     /**
@@ -75,8 +95,8 @@ class Subscriber
         return 0 == count(
             array_filter(
                 $value,
-                function ($v, $k) {
-                    return !is_int($k) || is_array($v) || is_object($v);
+                function ($val, $key) {
+                    return !is_int($key) || is_array($val) || is_object($val);
                 },
                 ARRAY_FILTER_USE_BOTH
             )
@@ -86,6 +106,7 @@ class Subscriber
     /**
      * @param $data
      * @return array
+     * @SuppressWarnings(PHPMD.ElseExpression)
      */
     public function makeFields($data)
     {
@@ -105,10 +126,10 @@ class Subscriber
                     $item['value'] = $value;
                     $item['type'] = 'multiple';
                 } else {
-                    $item['value'] = json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+                    $item['value'] = $this->json->serialize($value);
                     $item['type'] = 'json';
                 }
-            };
+            }
 
             $result[] = $item;
         }
@@ -167,14 +188,18 @@ class Subscriber
             'automation'          => 'reset'
         ];
 
-         $data = $this->helper->extractValues([
-             'cart' => $quote,
-             'cart.products' => $this->helper->getQuoteProducts($quote),
-             'cart.product_categories' => $this->helper->getProductCategories($quote),
-             'customer' => $customer
-             ], $this->helper->getMetaFields());
+         $data = $this->helper->extractValues(
+             [
+                 'cart' => $quote,
+                 'cart.products' => $this->helper->getQuoteProducts($quote),
+                 'cart.product_categories' => $this->helper->getProductCategories($quote),
+                 'customer' => $customer
+             ],
+             $this->helper->getMetaFields()
+         );
+
          $fields = $this->makeFields($data);
-        $subscriber['fields'] = $fields;
+         $subscriber['fields'] = $fields;
 
         // $customerFields = $this->fieldsBuilder->buildCustomerFields($customer);
         // $cartFields = $this->fieldsBuilder->buildCartFields($quote);
@@ -220,6 +245,7 @@ class Subscriber
             'order.cart' => $quote,
             'order.cart.products' => $this->helper->getQuoteProducts($quote),
             'order.cart.product_categories' => $this->helper->getProductCategories($quote),
+            'order.cart.product_names' => $this->helper->getProductNames($quote),
             'address' => $order->getShippingAddress()?$order->getShippingAddress():$order->getBillingAddress(),
             'customer' => $customer
         ], $this->helper->getMetaFields());
@@ -271,6 +297,7 @@ class Subscriber
         $subscriber['fields'] = $fields;
 
         $response = $this->subscriberApi->create($subscriber);
+
         try {
             $phone = !empty($customer->getTelephone())?$customer->getTelephone():
                 ($customer->getDefaultBillingAddress()?$customer->getDefaultBillingAddress()->getTelephone():
@@ -279,6 +306,7 @@ class Subscriber
                             ($shipment->getShippingAddress()?$shipment->getShippingAddress()->getTelephone(): null))));
 
             $this->subscriberApi->update($response['subscriber']['id'], ['phone_number' => $phone]);
+
         } catch (\Exception $e) {
             $this->logger->error($e);
         }

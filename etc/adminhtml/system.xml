@@ -13,16 +13,16 @@
                 <field id="use_transactional" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Use Transactional</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>Should Rule transactionals beeing used for the mail sending.</comment>
+                    <comment>Should emails be sent as Rule transactional email.</comment>
                 </field>
                 <field id="api_key" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Api key</label>
-                    <comment>Account api key for the Rule application.</comment>
+                    <label>API key</label>
+                    <comment>Rule API key (generated from your Rule account).</comment>
                 </field>
                 <field id="aggressive_abandoned_cart" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Aggressive abandoned cart</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>With this option enabled, we will report the e-mail address provided in the checkout (given that the customer exists) before user is logged in.</comment>
+                    <comment>With this option enabled, we will report the email address provided in the checkout (given that the customer exists) before user is logged in.</comment>
                 </field>
                 <field id="meta_fields" translate="comment label" sortOrder="40" showInStore="0" showInDefault="1">
                     <label>Meta fields</label>
