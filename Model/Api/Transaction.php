@@ -60,10 +60,8 @@ class Transaction
                         'email' => $recipient->getEmail()
                     ],
                     'content' => [
-                        // phpcs:ignore Magento2.Functions.DiscouragedFunction
-                        'plain' => base64_encode($message->getBodyText()),
-                        // phpcs:ignore Magento2.Functions.DiscouragedFunction
-                        'html' => base64_encode($message->getBodyText())
+                        'plain' => $message->getBodyText(),
+                        'html' => $message->getBodyText()
                     ]
                 ];
             }
