@@ -60,8 +60,8 @@ class Transaction
                         'email' => $recipient->getEmail()
                     ],
                     'content' => [
-                        'plain' => $message->getBodyText(),
-                        'html' => $message->getBodyText()
+                        'plain' => quoted_printable_decode($message->getBodyText()),
+                        'html' => quoted_printable_decode($message->getBodyText())
                     ]
                 ];
             }
