@@ -16,8 +16,7 @@ use Magento\Framework\Data\Form\FormKey\Validator;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
-use Zend_Validate;
-use Magento\Framework\Validator\EmailAddress;
+use Laminas\Validator\EmailAddress;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
@@ -191,13 +190,14 @@ class NewAction extends Subscriber implements HttpPostActionInterface
      *
      * @param string $email
      * @throws LocalizedException
-     * @throws \Zend_Validate_Exception
      * @return void
      * @SuppressWarnings(PHPMD.StaticAccess)
      */
     private function validateEmailFormat($email)
     {
-        if (!Zend_Validate::is($email, EmailAddress::class)) {
+        $validator = new EmailAddress();
+
+        if (!$validator->isValid($email)) {
             throw new LocalizedException(__('Please enter a valid email address.'));
         }
     }

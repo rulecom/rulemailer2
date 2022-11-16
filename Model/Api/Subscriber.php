@@ -181,6 +181,9 @@ class Subscriber
         }
 
         $quote = $cart->getQuote();
+        if (!$quote->hasItems()) {
+            return;
+        }
         $subscriber = [
             'email'               => $customer->getEmail(),
             'tags'                => [self::CART_IN_PROGRESS_TAG],
