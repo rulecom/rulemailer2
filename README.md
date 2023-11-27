@@ -6,7 +6,7 @@
 
 Magento 2 extension for [Rule](https://www.rule.se/). This extension allows Magento to send subscriber data to a customer's Rule account. Data includes: customer (email, first name, last name, date of birth and gender), cart info (product list, quantity, total price), and orders (product list, shipping address, product categories, total price). Also providing optional functionality for sending emails from Magento using the [RULE Transactional API](https://rule.se/apidoc/#transactions).
 
-Note: Tested up to Magento 2.4.2
+Note: Tested up to Magento 2.4.6
 
 ## Contents
 
@@ -20,16 +20,24 @@ Note: Tested up to Magento 2.4.2
 
 ### Install via composer
 
+Install like usual per [Adobe Commerce instructions](https://experienceleague.adobe.com/docs/commerce-operations/installation-guide/tutorials/extensions.html?lang=en).
+
 In the terminal `cd` to the root of your Magento project. Then run:
 
 ```bash
-cd ~/stack/apps/magento/htdocs
+bin/magento maintenance:enable
 
-sudo COMPOSER_MEMORY_LIMIT=-1 composer require rulecom/rulemailer2 -v
+composer require rulecom/rulemailer2
 
-sudo bin/magento-cli setup:upgrade
+bin/magento module:enable Rule_RuleMailer --clear-static-content
 
-sudo bin/magento-cli setup:di:compile
+bin/magento setup:upgrade
+
+bin/magento setup:di:compile
+
+bin/magento cache:clean
+
+bin/magento maintenance:disable
 ```
 
 ## Configuration
