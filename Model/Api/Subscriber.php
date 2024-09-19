@@ -201,12 +201,12 @@ class Subscriber
              $this->helper->getMetaFields()
          );
 
-         $fields = $this->makeFields($data);
-         $subscriber['fields'] = $fields;
+//         $fields = $this->makeFields($data);
+//         $subscriber['fields'] = $fields;
 
-        // $customerFields = $this->fieldsBuilder->buildCustomerFields($customer);
-        // $cartFields = $this->fieldsBuilder->buildCartFields($quote);
-        // $subscriber['fields'] = array_merge($customerFields, $cartFields);
+        $customerFields = $this->fieldsBuilder->buildCustomerFields($customer);
+        $cartFields = $this->fieldsBuilder->buildCartFields($quote);
+        $subscriber['fields'] = array_merge($customerFields, $cartFields);
 
         $response = $this->subscriberApi->create($subscriber);
         try {
@@ -252,12 +252,12 @@ class Subscriber
             'address' => $order->getShippingAddress()?$order->getShippingAddress():$order->getBillingAddress(),
             'customer' => $customer
         ], $this->helper->getMetaFields());
-        $fields = $this->makeFields($data);
-        $subscriber['fields'] = $fields;
+//        $fields = $this->makeFields($data);
+//        $subscriber['fields'] = $fields;
 
-        // $customerFields = $this->fieldsBuilder->buildCustomerFields($customer);
-        // $orderFields = $this->fieldsBuilder->buildOrderFields($order, $quote);
-        // $subscriber['fields'] = array_merge($customerFields, $orderFields);
+        $customerFields = $this->fieldsBuilder->buildCustomerFields($customer);
+        $orderFields = $this->fieldsBuilder->buildOrderFields($order, $quote);
+        $subscriber['fields'] = array_merge($customerFields, $orderFields);
 
         $response = $this->subscriberApi->create($subscriber);
         try {
