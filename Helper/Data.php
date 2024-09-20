@@ -313,7 +313,9 @@ class Data extends AbstractHelper
                         if (!array_key_exists($key, $output)) {
                             $output[$key] = [];
                         }
-                        $output[$key][substr($item, strlen($path)+1)] = $value;
+                        if (is_array($output[$key])) {
+                            $output[$key][substr($item, strlen($path)+1)] = $value;
+                        }
                     }
                 }
 
