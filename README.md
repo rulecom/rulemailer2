@@ -6,7 +6,7 @@
 
 Magento 2 extension for [Rule](https://www.rule.se/). This extension allows Magento to send subscriber data to a customer's Rule account. Data includes: customer (email, first name, last name, date of birth and gender), cart info (product list, quantity, total price), and orders (product list, shipping address, product categories, total price). Also providing optional functionality for sending emails from Magento using the [RULE Transactional API](https://rule.se/apidoc/#transactions).
 
-Note: Tested up to Magento 2.4.6
+Note: Tested up to Magento 2.4.7
 
 ## Contents
 
