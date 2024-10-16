@@ -43,4 +43,4 @@ bin/magento maintenance:disable
 ## Configuration
 
 In the admin part of your Magento app select `Stores/Configuration` section. Then select `RULE/Rulemailer` from the left menu.
-In the form enter your API key from the RULE application. If 'Use transactional' field set to 'Yes' all mail from the your Magento app are going to be sent via RULE Transactional API.
+In the form enter your API key from the RULE application. If 'Use transactional' field set to 'Yes' all mail from the your Magento app are going to be sent via RULE Transactional API. Be sure to have a valid email set in "Store Email Adresses" in the Configuration.
