@@ -246,7 +246,9 @@ class Subscriber
             'order' => $order,
             'order.store' => $order->getStore(),
             'order.cart' => $quote,
-            'order.cart.products' => $this->helper->getQuoteProducts($quote),
+            'order.cart.products' => count($quote->getAllVisibleItems()) ?
+                $this->helper->getQuoteProducts($quote) :
+                $this->helper->getOrderProducts($order),
             'order.cart.product_categories' => $this->helper->getProductCategories($quote),
             'order.cart.product_names' => $this->helper->getProductNames($quote),
             'address' => $order->getShippingAddress()?$order->getShippingAddress():$order->getBillingAddress(),
@@ -291,7 +293,9 @@ class Subscriber
             'order' => $order,
             'order.store' => $order->getStore(),
             'shipment' => $shipment,
-            'shipment.products' => $this->helper->getShippingProducts($shipment),
+            'shipment.products' => count($shipment->getAllItems()) ?
+                $this->helper->getShippingProducts($shipment) :
+                $this->helper->getOrderProducts($order),
             'shipment.product_categories' => $this->helper->getShippingProductCategories($shipment),
             'address' => $order->getShippingAddress()?$order->getShippingAddress():$order->getBillingAddress(),
             'customer' => $customer
