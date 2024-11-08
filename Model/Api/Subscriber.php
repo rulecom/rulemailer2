@@ -246,9 +246,7 @@ class Subscriber
             'order' => $order,
             'order.store' => $order->getStore(),
             'order.cart' => $quote,
-            'order.cart.products' => count($quote->getAllVisibleItems()) ?
-                $this->helper->getQuoteProducts($quote) :
-                $this->helper->getOrderProducts($order),
+            'order.cart.products' => $this->getOrderProducts($quote, $order),
             'order.cart.product_categories' => $this->helper->getProductCategories($quote),
             'order.cart.product_names' => $this->helper->getProductNames($quote),
             'address' => $order->getShippingAddress()?$order->getShippingAddress():$order->getBillingAddress(),
@@ -275,6 +273,12 @@ class Subscriber
         }
     }
 
+    private function getOrderProducts($quote, $order): array {
+        return count($quote->getAllVisibleItems()) ?
+            $this->helper->getQuoteProducts($quote) :
+            $this->helper->getOrderProducts($order);
+    }
+
     /**
      * @param \Magento\Customer\Model\Customer $customer
      * @param \Magento\Sales\Model\Order $order
@@ -293,9 +297,7 @@ class Subscriber
             'order' => $order,
             'order.store' => $order->getStore(),
             'shipment' => $shipment,
-            'shipment.products' => count($shipment->getAllItems()) ?
-                $this->helper->getShippingProducts($shipment) :
-                $this->helper->getOrderProducts($order),
+            'shipment.products' => $this->getShipmentProducts($shipment, $order),
             'shipment.product_categories' => $this->helper->getShippingProductCategories($shipment),
             'address' => $order->getShippingAddress()?$order->getShippingAddress():$order->getBillingAddress(),
             'customer' => $customer
@@ -317,5 +319,11 @@ class Subscriber
         } catch (\Exception $e) {
             $this->logger->error($e);
         }
+    }
+
+    private function getShipmentProducts($shipment, $order): array {
+        return count($shipment->getAllItems()) ?
+            $this->helper->getShippingProducts($shipment) :
+            $this->helper->getOrderProducts($order);
     }
 }
