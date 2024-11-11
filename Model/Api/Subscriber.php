@@ -252,6 +252,9 @@ class Subscriber
             'address' => $order->getShippingAddress()?$order->getShippingAddress():$order->getBillingAddress(),
             'customer' => $customer
         ], $this->helper->getMetaFields());
+        if (!array_key_exists('Order.Products', $data)) {
+            $data['Order.Products'] = $this->helper->getOrderProducts($order);
+        }
         $fields = $this->makeFields($data);
         $subscriber['fields'] = $fields;
 
@@ -274,6 +277,7 @@ class Subscriber
     }
 
     private function getOrderProducts($quote, $order): array {
+        $this->json->serialize($this->helper->getOrderProducts($order));
         return count($quote->getAllVisibleItems()) ?
             $this->helper->getQuoteProducts($quote) :
             $this->helper->getOrderProducts($order);
@@ -302,6 +306,7 @@ class Subscriber
             'address' => $order->getShippingAddress()?$order->getShippingAddress():$order->getBillingAddress(),
             'customer' => $customer
         ], $this->helper->getMetaFields());
+        $data['Order.Products'] = $this->helper->getOrderProducts($order);
         $fields = $this->makeFields($data);
         $subscriber['fields'] = $fields;
 
