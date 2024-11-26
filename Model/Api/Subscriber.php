@@ -252,9 +252,7 @@ class Subscriber
             'address' => $order->getShippingAddress()?$order->getShippingAddress():$order->getBillingAddress(),
             'customer' => $customer
         ], $this->helper->getMetaFields());
-        if (!array_key_exists('Order.Products', $data)) {
-            $data['Order.Products'] = $this->helper->getOrderProducts($order);
-        }
+        $this->checkProducts($data, $order);
         $fields = $this->makeFields($data);
         $subscriber['fields'] = $fields;
 
@@ -273,6 +271,12 @@ class Subscriber
             $this->subscriberApi->update($response['subscriber']['id'], ['phone_number' => $phone]);
         } catch (\Exception $e) {
             $this->logger->error($e);
+        }
+    }
+
+    private function checkProducts(&$data, $order) {
+        if (!array_key_exists('Order.Products', $data)) {
+            $data['Order.Products'] = $this->helper->getOrderProducts($order);
         }
     }
 
