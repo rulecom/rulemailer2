@@ -6,6 +6,7 @@ use Magento\Framework\Serialize\Serializer\Json;
 use Rule\ApiWrapper\ApiFactory;
 use Rule\ApiWrapper\Api\Api;
 use Rule\RuleMailer\Helper\CustomerData;
+use Rule\RuleMailer\Helper\OrderData;
 use Rule\RuleMailer\Model\FieldsBuilder;
 use Rule\RuleMailer\Helper\Data as Helper;
 use Psr\Log\LoggerInterface;
@@ -56,6 +57,11 @@ class Subscriber
     private $helper;
 
     /**
+     * @var OrderData
+     */
+    private $orderData;
+
+    /**
      * @var CustomerData
      */
     private $customerData;
@@ -73,6 +79,7 @@ class Subscriber
      * @param FieldsBuilder   $fieldsBuilder
      * @param LoggerInterface $logger
      * @param CustomerData    $customerData
+     * @param OrderData       $orderData
      *
      * @throws \Rule\ApiWrapper\Api\Exception\InvalidResourceException
      * @SuppressWarnings(PHPMD.StaticAccess)
@@ -82,13 +89,15 @@ class Subscriber
         Helper $helper,
         FieldsBuilder $fieldsBuilder,
         LoggerInterface $logger,
-        CustomerData    $customerData
+        CustomerData $customerData,
+        OrderData $orderData
     ) {
         $this->json = $json;
         $this->helper = $helper;
         $this->fieldsBuilder = $fieldsBuilder;
         $this->logger = $logger;
         $this->customerData = $customerData;
+        $this->orderData = $orderData;
         $this->subscriberApi = ApiFactory::make(
             $helper->getApiKey(),
             'subscriber'
@@ -288,22 +297,21 @@ class Subscriber
     }
 
     private function getOrderProducts($quote, $order): array {
-        $this->json->serialize($this->helper->getOrderProducts($order));
         return count($quote->getAllVisibleItems()) ?
             $this->helper->getQuoteProducts($quote) :
-            $this->helper->getOrderProducts($order);
+            $this->orderData->getOrderProducts($order);
     }
 
     private function getOrderProductsCategories($quote, $order): array {
         return count($quote->getAllVisibleItems()) ?
             $this->helper->getQuoteProductCategories($quote) :
-            $this->helper->getOrderProductCategories($order);
+            $this->orderData->getOrderProductCategories($order);
     }
 
     private function getOrderProductNames($quote, $order): array {
         return count($quote->getAllVisibleItems()) ?
             $this->helper->getQuoteProductNames($quote) :
-            $this->helper->getOrderProductNames($order);
+            $this->orderData->getOrderProductNames($order);
     }
 
     /**
@@ -348,12 +356,12 @@ class Subscriber
     private function getShipmentProducts($shipment, $order): array {
         return count($shipment->getAllItems()) ?
             $this->helper->getShippingProducts($shipment) :
-            $this->helper->getOrderProducts($order);
+            $this->orderData->getOrderProducts($order);
     }
 
     private function getShipmentProductsCategories($shipment, $order): array {
         return count($shipment->getAllItems()) ?
             $this->helper->getShippingProductCategories($shipment) :
-            $this->helper->getOrderProductCategories($order);
+            $this->orderData->getOrderProductCategories($order);
     }
 }

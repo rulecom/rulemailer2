@@ -21,21 +21,14 @@ class Data extends AbstractHelper
     private $json;
 
     /**
-     * @var OrderData
-     */
-    private $orderHelper;
-
-    /**
      * @param Context $context
      * @param Json    $json
      */
     public function __construct(
         Context $context,
-        Json $json,
-        OrderData $orderHelper
+        Json $json
     ) {
         $this->json = $json;
-        $this->orderHelper = $orderHelper;
 
         parent::__construct($context);
     }
@@ -511,38 +504,5 @@ class Data extends AbstractHelper
         }
 
         return $names;
-    }
-
-    /**
-     * Get Order Product Categories.
-     *
-     * @param \Magento\Sales\Model\Order $order
-     * @return array
-     */
-    public function getOrderProducts(Order $order)
-    {
-        return $this->orderHelper->getOrderProducts($order);
-    }
-
-    /**
-     * Get Order Product Categories.
-     *
-     * @param \Magento\Sales\Model\Order $order
-     * @return array
-     */
-    public function getOrderProductCategories(Order $order)
-    {
-        return $this->orderHelper->getOrderProductCategories($order);
-    }
-
-    /**
-     * Get Order Product Names.
-     *
-     * @param \Magento\Sales\Model\Order $order
-     * @return array
-     */
-    public function getOrderProductNames(Order $order)
-    {
-        return $this->orderHelper->getOrderProductNames($order);
     }
 }
