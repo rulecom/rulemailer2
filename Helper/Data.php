@@ -357,33 +357,26 @@ class Data extends AbstractHelper
     }
 
     /**
-     * Get Order Products.
+     * Get Products Names.
      *
-     * @param \Magento\Sales\Model\Order $quote
+     * @param Quote $quote
      * @return array
      */
-    public function getOrderProducts(\Magento\Sales\Model\Order $order)
+    public function getQuoteProductNames(Quote $quote)
     {
-        $products = [];
-        foreach ($order->getItems() as $item) {
-            if ($item->getParentItemId()) {
-                continue;
+        $names = [];
+
+        foreach ($quote->getAllVisibleItems() as $item) {
+            /** @var \Magento\Quote\Model\Quote\Item $item */
+
+            $name = $item->getName();
+
+            if ($name && !in_array($name, $names)) {
+                $names[] = $name;
             }
-
-            $product = $item->getProduct();
-
-            $products[] = [
-                'name'     => $item->getName(),
-                'url'      => $product->getProductUrl(),
-                'quantity' => $item->getQtyOrdered(),
-                'price'    => $item->getPrice(),
-                'image'    => $order->getStore()
-                        ->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA)
-                    . 'catalog/product' . $product->getImage()
-            ];
         }
 
-        return $products;
+        return $names;
     }
 
     /**
@@ -462,6 +455,32 @@ class Data extends AbstractHelper
 
         return $categories;
     }
+
+    /**
+     * Get Quote Product Categories.
+     *
+     * @param \Magento\Quote\Model\Quote $quote
+     * @return array
+     */
+    public function getQuoteProductCategories(Quote $quote)
+    {
+        $categories = [];
+
+        foreach ($quote->getAllVisibleItems() as $item) {
+            $productCategories = $item->getProduct()->getCategoryCollection()->addAttributeToSelect('name');
+
+            foreach ($productCategories->getItems() as $categoryModel) {
+                $category = $categoryModel->getName();
+
+                if ($category != null && !in_array($category, $categories)) {
+                    $categories[] = $category;
+                }
+            }
+        }
+
+        return $categories;
+    }
+
 
     /**
      * Get Product names.

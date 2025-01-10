@@ -5,6 +5,8 @@ namespace Rule\RuleMailer\Model\Api;
 use Magento\Framework\Serialize\Serializer\Json;
 use Rule\ApiWrapper\ApiFactory;
 use Rule\ApiWrapper\Api\Api;
+use Rule\RuleMailer\Helper\CustomerData;
+use Rule\RuleMailer\Helper\OrderData;
 use Rule\RuleMailer\Model\FieldsBuilder;
 use Rule\RuleMailer\Helper\Data as Helper;
 use Psr\Log\LoggerInterface;
@@ -55,6 +57,16 @@ class Subscriber
     private $helper;
 
     /**
+     * @var OrderData
+     */
+    private $orderData;
+
+    /**
+     * @var CustomerData
+     */
+    private $customerData;
+
+    /**
      * @var \Psr\Log\LoggerInterface
      */
     private $logger;
@@ -66,6 +78,8 @@ class Subscriber
      * @param Helper          $helper
      * @param FieldsBuilder   $fieldsBuilder
      * @param LoggerInterface $logger
+     * @param CustomerData    $customerData
+     * @param OrderData       $orderData
      *
      * @throws \Rule\ApiWrapper\Api\Exception\InvalidResourceException
      * @SuppressWarnings(PHPMD.StaticAccess)
@@ -74,12 +88,16 @@ class Subscriber
         Json $json,
         Helper $helper,
         FieldsBuilder $fieldsBuilder,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        CustomerData $customerData,
+        OrderData $orderData
     ) {
         $this->json = $json;
         $this->helper = $helper;
         $this->fieldsBuilder = $fieldsBuilder;
         $this->logger = $logger;
+        $this->customerData = $customerData;
+        $this->orderData = $orderData;
         $this->subscriberApi = ApiFactory::make(
             $helper->getApiKey(),
             'subscriber'
@@ -210,11 +228,7 @@ class Subscriber
 
         $response = $this->subscriberApi->create($subscriber);
         try {
-            $phone = !empty($customer->getTelephone())?$customer->getTelephone():
-                ($customer->getDefaultBillingAddress()?$customer->getDefaultBillingAddress()->getTelephone():
-                    ($customer->getDefaultShippingAddress()?$customer->getDefaultShippingAddress()->getTelephone():
-                        ($quote->getBillingAddress()?$quote->getBillingAddress()->getTelephone():
-                            ($quote->getShippingAddress()?$quote->getShippingAddress()->getTelephone(): null))));
+            $phone = $this->customerData->getPhoneNumberFromQuote($customer, $quote);
 
             $this->subscriberApi->update($response['subscriber']['id'], ['phone_number' => $phone]);
         } catch (\Exception $e) {
@@ -247,12 +261,12 @@ class Subscriber
             'order.store' => $order->getStore(),
             'order.cart' => $quote,
             'order.cart.products' => $this->getOrderProducts($quote, $order),
-            'order.cart.product_categories' => $this->helper->getProductCategories($quote),
-            'order.cart.product_names' => $this->helper->getProductNames($quote),
+            'order.cart.product_categories' => $this->getOrderProductsCategories($quote, $order),
+            'order.cart.product_names' => $this->getOrderProductNames($quote, $order),
             'address' => $order->getShippingAddress()?$order->getShippingAddress():$order->getBillingAddress(),
             'customer' => $customer
         ], $this->helper->getMetaFields());
-        $this->checkProducts($data, $order);
+        $this->checkFields($data, $order);
         $fields = $this->makeFields($data);
         $subscriber['fields'] = $fields;
 
@@ -262,11 +276,7 @@ class Subscriber
 
         $response = $this->subscriberApi->create($subscriber);
         try {
-            $phone = !empty($customer->getTelephone())?$customer->getTelephone():
-                ($customer->getDefaultBillingAddress()?$customer->getDefaultBillingAddress()->getTelephone():
-                    ($customer->getDefaultShippingAddress()?$customer->getDefaultShippingAddress()->getTelephone():
-                        ($quote->getBillingAddress()?$quote->getBillingAddress()->getTelephone():
-                            ($quote->getShippingAddress()?$quote->getShippingAddress()->getTelephone(): null))));
+            $phone = $this->customerData->getPhoneNumberFromQuote($customer, $quote);
 
             $this->subscriberApi->update($response['subscriber']['id'], ['phone_number' => $phone]);
         } catch (\Exception $e) {
@@ -274,17 +284,34 @@ class Subscriber
         }
     }
 
-    private function checkProducts(&$data, $order) {
+    private function checkFields(&$data, $order) {
         if (!array_key_exists('Order.Products', $data)) {
             $data['Order.Products'] = $this->helper->getOrderProducts($order);
+        }
+        if (!array_key_exists('Order.Products', $data)) {
+            $data['Order.Categories'] = $this->helper->getOrderProductCategories($order);
+        }
+        if (!array_key_exists('Order.Products', $data)) {
+            $data['Order.Names'] = $this->helper->getOrderProductNames($order);
         }
     }
 
     private function getOrderProducts($quote, $order): array {
-        $this->json->serialize($this->helper->getOrderProducts($order));
         return count($quote->getAllVisibleItems()) ?
             $this->helper->getQuoteProducts($quote) :
-            $this->helper->getOrderProducts($order);
+            $this->orderData->getOrderProducts($order);
+    }
+
+    private function getOrderProductsCategories($quote, $order): array {
+        return count($quote->getAllVisibleItems()) ?
+            $this->helper->getQuoteProductCategories($quote) :
+            $this->orderData->getOrderProductCategories($order);
+    }
+
+    private function getOrderProductNames($quote, $order): array {
+        return count($quote->getAllVisibleItems()) ?
+            $this->helper->getQuoteProductNames($quote) :
+            $this->orderData->getOrderProductNames($order);
     }
 
     /**
@@ -306,22 +333,18 @@ class Subscriber
             'order.store' => $order->getStore(),
             'shipment' => $shipment,
             'shipment.products' => $this->getShipmentProducts($shipment, $order),
-            'shipment.product_categories' => $this->helper->getShippingProductCategories($shipment),
+            'shipment.product_categories' => $this->getShipmentProductsCategories($shipment, $order),
             'address' => $order->getShippingAddress()?$order->getShippingAddress():$order->getBillingAddress(),
             'customer' => $customer
         ], $this->helper->getMetaFields());
-        $data['Order.Products'] = $this->helper->getOrderProducts($order);
+        $this->checkFields($data, $order);
         $fields = $this->makeFields($data);
         $subscriber['fields'] = $fields;
 
         $response = $this->subscriberApi->create($subscriber);
 
         try {
-            $phone = !empty($customer->getTelephone())?$customer->getTelephone():
-                ($customer->getDefaultBillingAddress()?$customer->getDefaultBillingAddress()->getTelephone():
-                    ($customer->getDefaultShippingAddress()?$customer->getDefaultShippingAddress()->getTelephone():
-                        ($shipment->getBillingAddress()?$shipment->getBillingAddress()->getTelephone():
-                            ($shipment->getShippingAddress()?$shipment->getShippingAddress()->getTelephone(): null))));
+            $phone = $this->customerData->getPhoneNumberFromShipment($customer, $shipment);
 
             $this->subscriberApi->update($response['subscriber']['id'], ['phone_number' => $phone]);
 
@@ -333,6 +356,12 @@ class Subscriber
     private function getShipmentProducts($shipment, $order): array {
         return count($shipment->getAllItems()) ?
             $this->helper->getShippingProducts($shipment) :
-            $this->helper->getOrderProducts($order);
+            $this->orderData->getOrderProducts($order);
+    }
+
+    private function getShipmentProductsCategories($shipment, $order): array {
+        return count($shipment->getAllItems()) ?
+            $this->helper->getShippingProductCategories($shipment) :
+            $this->orderData->getOrderProductCategories($order);
     }
 }
