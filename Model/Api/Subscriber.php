@@ -286,13 +286,13 @@ class Subscriber
 
     private function checkFields(&$data, $order) {
         if (!array_key_exists('Order.Products', $data)) {
-            $data['Order.Products'] = $this->helper->getOrderProducts($order);
+            $data['Order.Products'] = $this->orderData->getOrderProducts($order);
         }
         if (!array_key_exists('Order.Products', $data)) {
-            $data['Order.Categories'] = $this->helper->getOrderProductCategories($order);
+            $data['Order.Categories'] = $this->orderData->getOrderProductCategories($order);
         }
         if (!array_key_exists('Order.Products', $data)) {
-            $data['Order.Names'] = $this->helper->getOrderProductNames($order);
+            $data['Order.Names'] = $this->orderData->getOrderProductNames($order);
         }
     }
 
